@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Terms of Service — NEXWAVE Solutions</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/css/public.css">
+    <style>
+        .legal-page { min-height: 100vh; padding: 100px 5% 60px; }
+        .legal-container { max-width: 820px; margin: 0 auto; }
+        .legal-container h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(36px, 5vw, 56px);
+            color: var(--white);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .legal-container h1 span { color: var(--lime); }
+        .legal-meta {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .legal-container h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            color: var(--lime);
+            letter-spacing: 1px;
+            margin: 36px 0 12px;
+        }
+        .legal-container h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--white);
+            margin: 28px 0 8px;
+        }
+        .legal-container p {
+            font-size: 15px;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.8;
+            margin-bottom: 14px;
+            font-weight: 300;
+        }
+        .legal-container ul {
+            padding-left: 24px;
+            margin-bottom: 14px;
+        }
+        .legal-container ul li {
+            font-size: 15px;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.7;
+            margin-bottom: 6px;
+            font-weight: 300;
+        }
+        .legal-container ul li strong { color: var(--white); font-weight: 500; }
+        .legal-highlight {
+            background: rgba(181,245,66,0.06);
+            border: 1px solid rgba(181,245,66,0.15);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+        .legal-highlight p { margin-bottom: 0; font-size: 14px; color: rgba(255,255,255,0.85); }
+        .legal-highlight strong { color: var(--lime); }
+        .legal-nav {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 32px 0 0;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .legal-nav a {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+            transition: color 0.2s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .legal-nav a:hover { color: var(--lime); }
+        .legal-nav a i { font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Header -->
+<header id="mainHeader">
+    <a class="logo-wrap" href="index.html">
+        <img src="logo.png" class="site-logo" alt="NEXWAVE Logo">
+        <span class="logo-text">NEX<span>WAVE</span></span>
+    </a>
+    <nav class="nav-desktop">
+        <a href="pages/index.html">Home</a>
+        <a href="pages/who-we-are.html">Who We Are</a>
+        <a href="pages/what-we-do.html">What We Do</a>
+        <a href="pages/index.html#contact">Contact</a>
+        <a href="pages/login.html" class="btn-nav">Corporate Login</a>
+    </nav>
+    <div class="menu-btn" id="menuToggle" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+</header>
+
+<!-- NEXi Chat Widget -->
+<div class="chat-widget">
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:8px; height:8px; background:var(--lime); border-radius:50%;"></div>
+                <span style="font-weight:600; font-size:14px; color:var(--white);">NEXi</span>
+            </div>
+            <i class="fas fa-times" style="cursor:pointer; color:var(--muted);" onclick="toggleChat()"></i>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-wrap">
+            <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <i class="fas fa-paper-plane" style="color:var(--lime); cursor:pointer;" onclick="sendChatMessage()"></i>
+        </div>
+    </div>
+    <div class="chat-btn" onclick="toggleChat()" style="animation: pulse-wave 2s infinite;">
+        <i class="fas fa-comment"></i>
+    </div>
+</div>
+
+<!-- Side Menu -->
+<div id="sideMenu" class="side-menu">
+    <span style="position:absolute;top:20px;right:24px;cursor:pointer;color:rgba(255,255,255,0.5);font-size:28px;" onclick="closeMenu()">×</span>
+    <a href="pages/index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="pages/who-we-are.html"><i class="fas fa-users"></i> Who We Are</a>
+    <a href="pages/what-we-do.html"><i class="fas fa-briefcase"></i> What We Do</a>
+    <a href="pages/index.html#contact"><i class="fas fa-envelope"></i> Contact</a>
+    <a href="pages/login.html"><i class="fas fa-user-shield"></i> Corporate Login</a>
+    <a href="privacy.html"><i class="fas fa-shield-halved"></i> Privacy Policy</a>
+    <a href="terms.html" style="color:var(--lime);"><i class="fas fa-file-contract"></i> Terms of Service</a>
+    <div id="userEmail"></div>
+</div>
+
+<!-- Terms of Service Content -->
+<section class="legal-page">
+    <div class="legal-container">
+        <h1>TERMS OF <span>SERVICE</span></h1>
+        <div class="legal-meta">Last updated: 31 May 2026 · NEXWAVE Solutions (Pvt) Ltd</div>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing or using the NEXWAVE Solutions website at <strong>nexwavex.com</strong> (the "Site"), the NEXWAVE ERP portal, the NEXi AI chat assistant, or any related services (collectively, the "Services"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our Services.</p>
+
+        <p>These Terms apply to all visitors, users, and others who access or use our Services ("Users").</p>
+
+        <h2>2. Definitions</h2>
+        <ul>
+            <li><strong>"Company," "we," "us," "our"</strong> — NEXWAVE Solutions (Pvt) Ltd, a private limited company registered in Sri Lanka.</li>
+            <li><strong>"Services"</strong> — All features, content, and functionality offered through our Site, including the ERP dashboard, NEXi chat, newsletter, and contact forms.</li>
+            <li><strong>"User," "you," "your"</strong> — Any individual or entity that accesses or uses our Services.</li>
+            <li><strong>"ERP Portal"</strong> — The authenticated business management dashboard accessible at the <code>/erp/</code> path.</li>
+            <li><strong>"Content"</strong> — All text, graphics, logos, images, data, and software on our Site.</li>
+        </ul>
+
+        <h2>3. Use of Services</h2>
+
+        <h3>3.1 Eligibility</h3>
+        <p>You must be at least 16 years of age to use our Services. By using our Services, you represent and warrant that you meet this requirement.</p>
+
+        <h3>3.2 Account Registration</h3>
+        <p>Certain features of our Services (such as the ERP portal and NEXi identity) require account registration. You agree to:</p>
+        <ul>
+            <li>Provide accurate, current, and complete registration information</li>
+            <li>Maintain and promptly update your account information as necessary</li>
+            <li>Maintain the confidentiality of your login credentials</li>
+            <li>Notify us immediately of any unauthorised use of your account</li>
+            <li>Accept responsibility for all activities that occur under your account</li>
+        </ul>
+
+        <h3>3.3 Prohibited Activities</h3>
+        <p>You agree not to:</p>
+        <ul>
+            <li>Use our Services for any unlawful purpose or in violation of any applicable laws</li>
+            <li>Attempt to gain unauthorised access to any part of our Services, systems, or networks</li>
+            <li>Interfere with or disrupt the operation of our Services or servers</li>
+            <li>Upload or transmit viruses, malware, or any malicious code</li>
+            <li>Scrape, crawl, or harvest any content from our Services without our express written permission</li>
+            <li>Impersonate any person or entity, or misrepresent your affiliation with any person or entity</li>
+            <li>Use our Services to send unsolicited communications (spam)</li>
+        </ul>
+
+        <h2>4. ERP Portal Access</h2>
+        <p>Access to the ERP portal is restricted to authorised users only. By requesting ERP access, you represent that you are an employee, contractor, or authorised representative of a NEXWAVE client or partner. We reserve the right to:</p>
+        <ul>
+            <li>Grant, deny, or revoke ERP access at our sole discretion</li>
+            <li>Limit access to specific features based on user role</li>
+            <li>Audit and monitor ERP usage for security and compliance purposes</li>
+            <li>Delete ERP accounts that remain inactive for 12 months or more</li>
+        </ul>
+        <p>All data entered into the ERP system remains confidential to your organisation. We do not access, use, or share ERP data except as necessary to provide and maintain the service.</p>
+
+        <h2>5. NEXi AI Chat Assistant</h2>
+        <p>The NEXi AI assistant is provided as a conversational sales and support tool. By using NEXi, you acknowledge that:</p>
+        <ul>
+            <li>NEXi is powered by a large language model (LLaMA 3.3 70B via Groq) and responses are AI-generated — they may not always be accurate or complete</li>
+            <li>NEXi is <strong>not</strong> a substitute for professional engineering, legal, or financial advice</li>
+            <li>You should not share sensitive personal information (passwords, financial details, etc.) in chat conversations</li>
+            <li>Chat history is stored to provide continuity and improve responses — see our <a href="privacy.html" style="color:var(--lime);">Privacy Policy</a> for details</li>
+        </ul>
+
+        <h2>6. Google & GitHub OAuth</h2>
+        <p>You may choose to sign in using Google or GitHub OAuth. By using these authentication methods, you agree to:</p>
+        <ul>
+            <li>Grant us access to your basic profile information (name, email, avatar) as permitted by the OAuth provider</li>
+            <li>Accept that your use of Google and GitHub services remains governed by their respective terms and privacy policies</li>
+            <li>Acknowledge that we do not store your passwords — authentication is handled entirely by the OAuth provider</li>
+        </ul>
+        <p>You may revoke OAuth access at any time through your Google Account or GitHub Account settings.</p>
+
+        <h2>7. Intellectual Property</h2>
+        <p>All content, design, code, graphics, logos, and materials on our Site and Services are the intellectual property of NEXWAVE Solutions (Pvt) Ltd or our licensors. You may not:</p>
+        <ul>
+            <li>Reproduce, distribute, modify, or create derivative works of our content without our prior written consent</li>
+            <li>Use our trademarks, logos, or branding without our permission</li>
+            <li>Remove any copyright, trademark, or proprietary notices from our content</li>
+        </ul>
+
+        <h2>8. User-Generated Content</h2>
+        <p>If you submit content to our Services (including ERP data, chat messages, contact form submissions, or newsletter feedback), you grant us a non-exclusive, royalty-free license to store, process, and display that content solely for the purpose of providing the Services to you. You retain all ownership rights to your content.</p>
+
+        <h2>9. Third-Party Services</h2>
+        <p>Our Services may integrate with third-party services (Supabase, Groq, Google, GitHub). We are not responsible for the availability, accuracy, or content of these third-party services. Your use of these services is subject to their respective terms and policies.</p>
+
+        <h2>10. Limitation of Liability</h2>
+        <div class="legal-highlight">
+            <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY LAW, NEXWAVE SOLUTIONS (PVT) LTD SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM (I) YOUR USE OR INABILITY TO USE THE SERVICES; (II) ANY UNAUTHORISED ACCESS TO OR USE OF OUR SERVERS AND/OR ANY PERSONAL INFORMATION STORED THEREIN; (III) ANY INTERRUPTION OR CESSATION OF SERVICES; OR (IV) ANY BUGS, VIRUSES, OR OTHER MALICIOUS CODE THAT MAY BE TRANSMITTED TO OR THROUGH OUR SERVICES.</strong></p>
+        </div>
+
+        <h2>11. Disclaimer of Warranties</h2>
+        <p>Our Services are provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, non-infringement, or course of performance. We do not warrant that:</p>
+        <ul>
+            <li>The Services will function uninterrupted, secure, or error-free</li>
+            <li>Any errors or defects will be corrected</li>
+            <li>The Services are free of viruses or other harmful components</li>
+            <li>The results obtained from using the Services will meet your requirements</li>
+        </ul>
+
+        <h2>12. Indemnification</h2>
+        <p>You agree to defend, indemnify, and hold harmless NEXWAVE Solutions (Pvt) Ltd, its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or related to your use of the Services, your violation of these Terms, or your violation of any rights of a third party.</p>
+
+        <h2>13. Termination</h2>
+        <p>We reserve the right to suspend or terminate your access to our Services at any time, without prior notice, for any reason, including if you violate these Terms. Upon termination:</p>
+        <ul>
+            <li>Your right to use the Services immediately ceases</li>
+            <li>We may delete your account and associated data, subject to our data retention obligations</li>
+            <li>Sections 7-15 of these Terms shall survive termination</li>
+        </ul>
+
+        <h2>14. Governing Law</h2>
+        <p>These Terms shall be governed by and construed in accordance with the laws of <strong>Sri Lanka</strong>. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of Sri Lanka.</p>
+
+        <h2>15. Changes to Terms</h2>
+        <p>We reserve the right to modify these Terms at any time. We will notify you of material changes by posting the updated Terms on this page and updating the "Last updated" date. Your continued use of our Services after any such changes constitutes your acceptance of the new Terms.</p>
+
+        <h2>16. Contact Information</h2>
+        <p>For any questions, complaints, or notices regarding these Terms, please contact us:</p>
+        <ul>
+            <li><strong>Email:</strong> <a href="mailto:legal@nexwavex.com" style="color:var(--lime);">legal@nexwavex.com</a></li>
+            <li><strong>Post:</strong> NEXWAVE Solutions (Pvt) Ltd, 209/32, Kudamaduwa, Siddamulla, Piliyandala, Sri Lanka</li>
+            <li><strong>Phone:</strong> <a href="tel:+94112233444" style="color:var(--lime);">+94 11 223 3444</a></li>
+        </ul>
+
+        <div class="legal-nav">
+            <a href="pages/index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            <a href="privacy.html"><i class="fas fa-shield-halved"></i> Privacy Policy</a>
+            <a href="mailto:legal@nexwavex.com"><i class="fas fa-envelope"></i> Contact Legal</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-grid">
+        <div>
+            <div class="footer-logo-text">NEX<span>WAVE</span></div>
+            <p class="footer-tagline">Precision engineering meets scalable technology. Sri Lanka's industrial evolution partner since 2016.</p>
+            <div class="footer-social">
+                <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div>
+            <h4>Legal</h4>
+            <ul class="footer-links">
+                <li><a href="privacy.html">Privacy Policy</a></li>
+                <li><a href="terms.html">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Contact</h4>
+            <div class="footer-contact">
+                <div class="contact-row"><i class="fas fa-map-marker-alt"></i><span>209/32, Kudamaduwa,<br>Siddamulla, Piliyandala,<br>Sri Lanka</span></div>
+                <div class="contact-row"><i class="fas fa-phone"></i><a href="tel:+94112233444">+94 11 223 3444</a></div>
+                <div class="contact-row"><i class="fas fa-envelope"></i><a href="mailto:info@nexwavex.com">info@nexwavex.com</a></div>
+                <div class="contact-row"><i class="fas fa-globe"></i><a href="https://www.nexwavex.com" target="_blank">www.nexwavex.com</a></div>
+            </div>
+        </div>
+        <div>
+            <h4>Navigation</h4>
+            <ul class="footer-links">
+                <li><a href="pages/index.html">Home</a></li>
+                <li><a href="pages/who-we-are.html">Who We Are</a></li>
+                <li><a href="pages/what-we-do.html">What We Do</a></li>
+                <li><a href="pages/login.html">Corporate Login</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="bottom-bar">
+        <p>© 2026 NEXWAVE Solutions (Pvt) Ltd. All Rights Reserved.</p>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.3)">
+            <div class="shield-icon"></div>
+            Secured & Protected
+        </div>
+    </div>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="shared/config.js"></script>
+<script src="shared/js/public.js"></script>
+</body>
+</html>

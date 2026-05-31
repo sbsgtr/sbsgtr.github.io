@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>What We Do — NEXWAVE Solutions</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/public.css">
+    <style>
+        .page-banner { min-height: 50vh; display: flex; flex-direction: column; justify-content: center; padding: 120px 5% 60px; position: relative; overflow: hidden; background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(46,125,50,0.18) 0%, transparent 70%), linear-gradient(160deg, #071a09 0%, #0c2e10 50%, #071a09 100%); }
+        .page-banner h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 7vw, 88px); line-height: 0.95; color: var(--white); letter-spacing: 2px; }
+        .page-banner h1 span { color: var(--lime); }
+        .page-banner p { font-size: clamp(15px, 2vw, 18px); color: var(--muted); max-width: 560px; margin-top: 16px; font-weight: 300; line-height: 1.7; }
+        .service-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .service-detail-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 32px; transition: border-color 0.3s, transform 0.3s; }
+        .service-detail-card:hover { border-color: rgba(181,245,66,0.3); transform: translateY(-4px); }
+        .service-detail-card h3 { font-size: 17px; font-weight: 600; color: var(--white); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .service-detail-card h3 i { color: var(--lime); font-size: 20px; }
+        .service-detail-card p { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+        .service-detail-card ul { list-style: none; padding: 0; margin: 12px 0 0; }
+        .service-detail-card ul li { font-size: 13px; color: var(--muted); padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+        .service-detail-card ul li::before { content: '▸'; color: var(--lime); font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <header id="mainHeader">
+        <a href="index.html" class="logo-wrap">
+            <img src="../logo.png" class="site-logo" alt="NEXWAVE Logo">
+            <span class="logo-text">NEX<span>WAVE</span></span>
+        </a>
+        <nav class="nav-desktop">
+            <a href="index.html">Home</a>
+            <a href="who-we-are.html">Who We Are</a>
+            <a href="what-we-do.html" style="color:var(--white);">What We Do</a>
+            <a href="our_values.html">Values</a>
+            <a href="index.html#contact">Contact</a>
+        </nav>
+        <div class="menu-btn" id="menuToggle" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+    </header>
+
+    <div class="side-menu" id="sideMenu">
+        <a href="index.html"><i class="fas fa-house"></i> Home</a>
+        <a href="who-we-are.html"><i class="fas fa-users"></i> Who We Are</a>
+        <a href="what-we-do.html"><i class="fas fa-cogs"></i> What We Do</a>
+        <a href="our_values.html"><i class="fas fa-heart"></i> Values</a>
+        <a href="index.html#contact"><i class="fas fa-envelope"></i> Contact</a>
+        <a id="erpLink" href="../erp/corporate.html" style="display:none;"><i class="fas fa-chart-line"></i> ERP Dashboard</a>
+        <a id="loginBtn" href="login.html"><i class="fas fa-user-shield"></i> Corporate Login</a>
+        <a href="#" onclick="signOut(); return false;" id="signOutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        <div id="userEmail"></div>
+        <div id="publicSignInSep" style="border-top:1px solid rgba(255,255,255,0.08);margin:8px 30px;padding-top:8px;"></div>
+        <a id="publicGoogleBtn" href="#" onclick="signInWithPublicGoogle(); return false;"><i class="fab fa-google"></i> Sign in with Google</a>
+        <a id="publicGithubBtn" href="#" onclick="signInWithPublicGithub(); return false;"><i class="fab fa-github"></i> Sign in with GitHub</a>
+        <a id="newsletterLink" href="countdown.html" style="display:none;"><i class="fas fa-envelope"></i> Subscribe to Newsletter</a>
+        <div id="userAvatar" style="display:none;align-items:center;gap:10px;padding:12px 30px;border-top:1px solid rgba(255,255,255,0.05);margin-top:8px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;color:var(--green-deep);font-weight:600;font-size:13px;flex-shrink:0;" id="userInitials"></div>
+            <div style="flex:1;">
+                <div style="font-size:13px;color:var(--white);font-weight:500;" id="userName"></div>
+                <div style="font-size:11px;color:var(--muted);" id="userEmailSub"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-banner">
+        <h1>What We<br><span>Do</span></h1>
+        <p>Eight specialised divisions — one integrated approach. From factory floor automation to smart hospitality systems, we deliver turnkey solutions backed by deep technical expertise.</p>
+    </div>
+
+    <section class="section services-bg">
+        <div class="section-tag">Our Divisions</div>
+        <h2 class="section-title">Complete Industrial<br>Capabilities</h2>
+        <p class="section-body">Each division is staffed with certified engineers and technicians who bring hands-on experience from hundreds of successful projects.</p>
+
+        <div class="service-detail-grid">
+            <div class="service-detail-card"><h3><i class="fas fa-robot"></i> Automation &amp; Control</h3><p>Full-stack industrial automation: PLC programming (Siemens TIA Portal, Allen-Bradley RSLogix, Mitsubishi GX Works), SCADA design (WinCC, Ignition, Citect), pneumatics, HMI, OEE analysis, and complete line retrofits.</p><ul><li>Siemens S7-1200/1500, Allen-Bradley CompactLogix</li><li>SCADA with historian and reporting</li><li>Pneumatic circuit design &amp; installation</li><li>Legacy system migration &amp; retrofit</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-cutter"></i> CNC &amp; Tool Reselling</h3><p>End-to-end CNC solutions: fiber laser cutters, lathe tools, cutting inserts, boring bars, milling tools, and CNC retrofit services — sourced from top global brands.</p><ul><li>Fiber laser cutting machines (1kW–12kW)</li><li>Turning &amp; milling tooling packages</li><li>CNC spindle repair &amp; calibration</li><li>Tooling inventory management</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-microchip"></i> PCB &amp; Electronics</h3><p>Full lifecycle electronics manufacturing: schematic capture, PCB layout (1–12 layers, 0.1mm track/gap), SMT/THT assembly, board repair, and automated optical inspection. 3–5 day prototype turns.</p><ul><li>Multi-layer PCB design (Altium, KiCad)</li><li>SMT assembly with AOI verification</li><li>Functional testing &amp; firmware loading</li><li>Reverse engineering &amp; board repair</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-building"></i> Structural &amp; Infrastructure</h3><p>Industrial infrastructure delivery: LV/MV power distribution, compressed air systems, structural steel fabrication, data cabling (Cat6A, fibre optic), and complete automotive workshop builds.</p><ul><li>LV switchgear &amp; distribution boards</li><li>Compressed air piping &amp; receiver tanks</li><li>Fibre backbone &amp; structured cabling</li><li>Automotive workshop equipment &amp; layout</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-volume-up"></i> Professional Acoustics</h3><p>Design and installation of professional audio systems: 100V line PA, background music, conference room audio, and emergency evacuation systems compliant with BS 5839-8.</p><ul><li>100V line PA &amp; zone paging</li><li>Conference room audio &amp; DSP</li><li>Emergency voice evacuation</li><li>Background music &amp; multi-zone</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-leaf"></i> Smart Systems</h3><p>Intelligent automation for agriculture, homes, kitchens, and energy. From drip irrigation controllers to full smart home integration with energy monitoring.</p><ul><li>Drip irrigation &amp; greenhouse automation</li><li>Smart home (lighting, curtains, HVAC)</li><li>Commercial kitchen automation</li><li>Energy monitoring &amp; management</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-clipboard-check"></i> Technical Consultancy</h3><p>Independent technical advisory: feasibility studies, factory layout design, cost estimation, project planning, and bid evaluation — helping clients make informed decisions.</p><ul><li>Feasibility studies &amp; technical audits</li><li>Factory &amp; production line layout</li><li>Cost estimation &amp; ROI analysis</li><li>Project management &amp; supervision</li></ul></div>
+            <div class="service-detail-card"><h3><i class="fas fa-hotel"></i> Hospitality Projects</h3><p>Complete technology delivery for high-end hospitality: building management systems, security, audio/visual, power, and data distribution — including Sigiriya and Trincomalee projects.</p><ul><li>BMS (HVAC, lighting, energy)</li><li>CCTV &amp; access control</li><li>Home theatre &amp; multi-room audio</li><li>Power &amp; data backbone</li></ul></div>
+        </div>
+    </section>
+
+    <section class="section" id="process2">
+        <div class="section-tag">Delivery Model</div>
+        <h2 class="section-title">How We Deliver</h2>
+        <p class="section-body">Every engagement follows our proven four-phase delivery framework — ensuring consistency, quality, and complete client satisfaction.</p>
+        <div class="process-steps">
+            <div class="process-step"><div class="step-circle">01</div><div class="step-content"><h4>Discover &amp; Define</h4><p>We audit your current systems, interview stakeholders, and define a clear scope of work with measurable outcomes.</p></div><div class="step-line"></div></div>
+            <div class="process-step"><div class="step-circle">02</div><div class="step-content"><h4>Engineer &amp; Quote</h4><p>Detailed engineering designs, bill of materials, and firm pricing — no hidden costs or scope creep.</p></div><div class="step-line"></div></div>
+            <div class="process-step"><div class="step-circle">03</div><div class="step-content"><h4>Execute &amp; Integrate</h4><p>Certified teams implement on-site with minimal disruption. We integrate with existing systems and test thoroughly.</p></div><div class="step-line"></div></div>
+            <div class="process-step"><div class="step-circle">04</div><div class="step-content"><h4>Handover &amp; Support</h4><p>Documentation, training, and ongoing support ensure your team can operate and maintain the system long-term.</p></div></div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="footer-grid">
+            <div><div class="footer-logo-text">NEX<span>WAVE</span></div><p class="footer-tagline">Industrial Technology. Engineered. — delivering future-ready solutions across Sri Lanka.</p><div class="footer-social"><a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a><a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-btn"><i class="fab fa-youtube"></i></a><a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a></div></div>
+            <div><h4>Company</h4><ul class="footer-links"><li><a href="who-we-are.html">About</a></li><li><a href="what-we-do.html">Services</a></li><li><a href="our_values.html">Values</a></li><li><a href="index.html#contact">Contact</a></li>
+                <li><a href="../privacy.html">Privacy Policy</a></li>
+                <li><a href="../terms.html">Terms of Service</a></li></ul></div>
+            <div><h4>Services</h4><ul class="footer-links"><li><a href="what-we-do.html">Automation</a></li><li><a href="what-we-do.html">CNC &amp; Tooling</a></li><li><a href="what-we-do.html">PCB</a></li><li><a href="what-we-do.html">Infrastructure</a></li><li><a href="what-we-do.html">Consultancy</a></li></ul></div>
+            <div><h4>Get in Touch</h4><div class="footer-contact"><div class="contact-row"><i class="fas fa-map-pin"></i><span>Colombo, Sri Lanka</span></div><div class="contact-row"><i class="fas fa-phone"></i><a href="tel:+94112345678">+94 11 234 5678</a></div><div class="contact-row"><i class="fas fa-envelope"></i><a href="mailto:info@nexwave.lk">info@nexwave.lk</a></div></div>
+                <form class="contact-form" onsubmit="return validateForm()" style="margin-top:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><input type="text" placeholder="Your Name" required><input type="email" placeholder="Email" required></div>
+                    <textarea placeholder="Tell us about your project..." required></textarea>
+                    <div class="captcha-row"><span>What is <span id="num1" style="color:var(--lime);font-weight:700;">3</span> + <span id="num2" style="color:var(--lime);font-weight:700;">5</span>?</span><input type="number" id="captchaInput" required style="width:70px;"><button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i> Send</button></div>
+                </form>
+            </div>
+        </div>
+        <div class="bottom-bar"><p>&copy; 2025 NEXWAVE Solutions (Pvt) Ltd. All rights reserved.</p><p style="display:flex;align-items:center;gap:12px;">
+            <a href="../privacy.html" style="color:rgba(255,255,255,0.3);text-decoration:none;font-size:12px;transition:color 0.2s;">Privacy</a>
+            <a href="../terms.html" style="color:rgba(255,255,255,0.3);text-decoration:none;font-size:12px;transition:color 0.2s;">Terms</a>
+            <span class="shield-icon"></span> Secured with end-to-end encryption</p></div>
+    </footer>
+
+    <div class="chat-widget">
+        <div class="chat-box" id="chatBox"><div class="chat-header"><span style="display:flex;align-items:center;gap:8px;font-weight:600;color:#fff;"><i class="fas fa-robot" style="color:var(--lime);"></i> NEXi</span><span onclick="toggleChat()" style="cursor:pointer;color:rgba(255,255,255,0.5);font-size:18px;">&times;</span></div>
+            <div class="chat-messages" id="chatMessages"><div class="msg ai">Hello! 👋 I'm NEXi from NEXWAVE Solutions. May I know your name please?</div></div>
+            <div class="chat-input-wrap"><input type="text" id="chatInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendChatMessage()"><span onclick="sendChatMessage()" style="cursor:pointer;color:var(--lime);font-size:18px;"><i class="fas fa-paper-plane"></i></span></div>
+        </div>
+        <div class="chat-btn" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/public.js"></script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Customers — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .client-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link active"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Customers</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-users" style="color:var(--primary-green);"></i> Customers &amp; Clients</h1>
+
+            <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+                <input type="text" id="customerSearch" placeholder="Search customers..." oninput="filterCustomers()" style="flex:1;min-width:200px;padding:10px 16px;border:1px solid #ddd;border-radius:10px;font-size:14px;">
+                <button onclick="showCustomerForm()"><i class="fas fa-plus"></i> New Customer</button>
+            </div>
+
+            <div class="card" style="overflow-x:auto;">
+                <table><thead><tr>
+                    <th>Name</th><th>Company</th><th>Contact</th><th>Email</th><th>City</th><th>Actions</th>
+                </tr></thead><tbody id="customersTable"><tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div class="overlay" id="customerOverlay"><div class="modal" style="width:580px;"><div class="modal-header"><h3><i class="fas fa-users" style="color:var(--primary-green);"></i> <span id="customerFormTitle">New Customer</span></h3><button class="icon-close" onclick="closeModal('customerOverlay')">&times;</button></div><div class="modal-body">
+        <input type="hidden" id="editCustomerId">
+        <label>Contact Person *</label>
+        <input type="text" id="cName" placeholder="Full name">
+        <div class="client-grid">
+            <div><label>Company Name</label><input type="text" id="cCompany" placeholder="Company name"></div>
+            <div><label>Contact Number *</label><input type="tel" id="cPhone" placeholder="+94 11 234 5678"></div>
+        </div>
+        <div class="client-grid">
+            <div><label>Email</label><input type="email" id="cEmail" placeholder="email@example.com"></div>
+            <div><label>City</label><input type="text" id="cCity" placeholder="Colombo"></div>
+        </div>
+        <label>Address</label>
+        <input type="text" id="cAddress" placeholder="Street address">
+        <label>Notes</label>
+        <textarea id="cNotes" rows="3" placeholder="Any additional notes..." style="resize:vertical;"></textarea>
+    </div><div class="modal-footer">
+        <button onclick="closeModal('customerOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveCustomer()"><i class="fas fa-save"></i> Save Customer</button>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <script>
+        (function initCustomers() {
+            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+            const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+            let customersCache = [];
+
+            async function loadCustomers() {
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) return;
+                    const { data, error } = await client.from('customers').select('*').order('contact_person');
+                    if (error) throw error;
+                    customersCache = data || [];
+                } catch (err) {
+                    console.warn('Customers load failed:', err);
+                    customersCache = [];
+                    document.getElementById('customersTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load customers. Please run the database migration first.</td></tr>';
+                }
+                renderCustomers();
+            }
+
+            function renderCustomers() {
+                const tbody = document.getElementById('customersTable');
+                const search = (document.getElementById('customerSearch').value || '').toLowerCase();
+                let filtered = customersCache;
+                if (search) filtered = filtered.filter(c =>                            c.contact_person.toLowerCase().includes(search) || 
+                            (c.company_name || '').toLowerCase().includes(search) || 
+                            (c.contact_number || '').includes(search) ||
+                    (c.email || '').toLowerCase().includes(search)
+                );
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No customers found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = filtered.map(c => `<tr>
+                    <td><strong>${escapeHtml(c.contact_person)}</strong></td>
+                    <td>${escapeHtml(c.company_name || '—')}</td>
+                    <td>${escapeHtml(c.contact_number || '—')}</td>
+                    <td>${escapeHtml(c.email || '—')}</td>
+                    <td>${escapeHtml(c.city || '—')}</td>
+                    <td><button class="btn-sm blue" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button> <button class="btn-sm red" onclick="deleteCustomer('${c.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('');
+            }
+
+            window.filterCustomers = function() { renderCustomers(); };
+
+            window.showCustomerForm = function() {
+                document.getElementById('editCustomerId').value = '';
+                document.getElementById('customerFormTitle').innerText = 'New Customer';
+                document.getElementById('cName').value = '';
+                document.getElementById('cCompany').value = '';
+                document.getElementById('cPhone').value = '';
+                document.getElementById('cEmail').value = '';
+                document.getElementById('cCity').value = '';
+                document.getElementById('cAddress').value = '';
+                document.getElementById('cNotes').value = '';
+                openModal('customerOverlay');
+            };
+
+            window.editCustomer = async function(id) {
+                try {
+                    const { data, error } = await client.from('customers').select().eq('id', id).single();
+                    if (error) throw error;
+                    if (!data) { showToast('Customer not found.', 'error'); return; }
+                    document.getElementById('editCustomerId').value = id;
+                    document.getElementById('customerFormTitle').innerText = 'Edit Customer';
+                    document.getElementById('cName').value = data.contact_person || '';
+                    document.getElementById('cCompany').value = data.company_name || '';
+                    document.getElementById('cPhone').value = data.contact_number || '';
+                    document.getElementById('cEmail').value = data.email || '';
+                    document.getElementById('cCity').value = data.city || '';
+                    document.getElementById('cAddress').value = data.address || '';
+                    document.getElementById('cNotes').value = data.notes || '';
+                    openModal('customerOverlay');
+                } catch (err) {
+                    showToast('Error loading customer: ' + (err.message || err), 'error');
+                    console.error('editCustomer error:', err);
+                }
+            };
+
+            window.saveCustomer = async function() {
+                const name = document.getElementById('cName').value.trim();
+                if (!name) { showToast('Customer name is required.', 'error'); return; }
+                const editId = document.getElementById('editCustomerId').value;                    const payload = {
+                    contact_person: name,
+                    company_name: document.getElementById('cCompany').value.trim(),
+                    contact_number: document.getElementById('cPhone').value.trim(),
+                    email: document.getElementById('cEmail').value.trim(),
+                    city: document.getElementById('cCity').value.trim(),
+                    address: document.getElementById('cAddress').value.trim(),
+                    notes: document.getElementById('cNotes').value.trim()
+                };
+                try {
+                    if (editId) {
+                        const { error } = await client.from('customers').update(payload).eq('id', editId);
+                        if (error) throw error;
+                        showToast('Customer updated!');
+                    } else {
+                        const { error } = await client.from('customers').insert(payload);
+                        if (error) throw error;
+                        showToast('Customer created!');
+                    }
+                    closeModal('customerOverlay');
+                    loadCustomers();
+                } catch (err) {
+                    showToast('Error saving customer: ' + (err.message || err), 'error');
+                    console.error('saveCustomer error:', err);
+                }
+            };
+
+            window.deleteCustomer = async function(id) {
+                if (!confirm('Delete this customer?')) return;
+                try {
+                    const { error } = await client.from('customers').delete().eq('id', id);
+                    if (error) throw error;
+                    showToast('Customer deleted.');
+                    loadCustomers();
+                } catch (err) {
+                    showToast('Error deleting customer: ' + (err.message || err), 'error');
+                    console.error('deleteCustomer error:', err);
+                }
+            };
+
+            loadCustomers();
+        })();
+    </script>
+</body>
+</html>

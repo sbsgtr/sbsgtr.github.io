@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Corporate — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .stat-card { display: flex; align-items: center; gap: 20px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; background: var(--light-green); color: var(--primary-green); display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
+        .stat-val { font-size: 2em; font-weight: 800; margin: 0; color: var(--dark-green); }
+        .stat-label { font-size: 0.82em; color: var(--text-muted); }
+        .flash-wrap { position: relative; }
+        .flash { animation: flashAnim 0.5s ease-out; }
+        @keyframes flashAnim { 0% { background: rgba(46,125,50,0.3); } 100% { background: transparent; } }
+        .notification-badge { position: absolute; top: -6px; right: -6px; background: #c62828; color: white; font-size: 10px; padding: 2px 6px; border-radius: 99px; font-weight: 700; }
+        .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+        .tile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 30px; }
+        .tile { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); padding: 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.5); text-align: center; text-decoration: none; color: var(--text-main); transition: 0.2s; cursor: pointer; }
+        .tile:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .tile i { font-size: 24px; color: var(--primary-green); margin-bottom: 8px; }
+        .tile h4 { font-size: 14px; font-weight: 600; margin: 0; }
+        .tile p { font-size: 11px; color: var(--text-muted); margin: 4px 0 0; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Dashboard</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-th-large" style="color:var(--primary-green);"></i> Corporate Dashboard</h1>
+
+            <div class="action-bar">
+                <button onclick="location.href='est_inv.html'"><i class="fas fa-plus"></i> New Estimate</button>
+                <button onclick="location.href='accounting.html'"><i class="fas fa-chart-bar"></i> View Reports</button>
+                <button onclick="refreshDashboard()" style="background:#546e7a;"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+
+            <div class="stats-grid" id="kpiGrid">
+                <div class="card stat-card"><div class="stat-icon"><i class="fas fa-file-invoice"></i></div><div><p class="stat-val" id="kpiOpenInvoices">0</p><p class="stat-label">Open Invoices</p></div></div>
+                <div class="card stat-card"><div class="stat-icon" style="background:#fff3e0;color:#e65100;"><i class="fas fa-clock"></i></div><div><p class="stat-val" id="kpiPendingEst">0</p><p class="stat-label">Pending Estimates</p></div></div>
+                <div class="card stat-card"><div class="stat-icon" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-check-circle"></i></div><div><p class="stat-val" id="kpiPaidThisMonth">LKR 0</p><p class="stat-label">Paid This Month</p></div></div>
+                <div class="card stat-card"><div class="stat-icon" style="background:#e3f2fd;color:#1565c0;"><i class="fas fa-exclamation-triangle"></i></div><div><p class="stat-val" id="kpiOverdue">0</p><p class="stat-label">Overdue</p></div></div>
+                <div class="card stat-card"><div class="stat-icon" style="background:#f3e5f5;color:#7b1fa2;"><i class="fas fa-boxes"></i></div><div><p class="stat-val" id="kpiProducts">0</p><p class="stat-label">Products</p></div></div>
+                <div class="card stat-card"><div class="stat-icon" style="background:#fce4ec;color:#c62828;"><i class="fas fa-users"></i></div><div><p class="stat-val" id="kpiCustomers">0</p><p class="stat-label">Customers</p></div></div>
+            </div>
+
+            <div class="tile-grid">
+                <a href="products.html" class="tile"><i class="fas fa-boxes"></i><h4>Products</h4><p>Manage catalog</p></a>
+                <a href="customers.html" class="tile"><i class="fas fa-users"></i><h4>Customers</h4><p>Manage clients</p></a>
+                <a href="est_inv.html" class="tile"><i class="fas fa-file-invoice"></i><h4>Estimates</h4><p>Create &amp; manage</p></a>
+                <a href="est_inv.html?tab=invoices" class="tile"><i class="fas fa-receipt"></i><h4>Invoices</h4><p>Track billing</p></a>
+                <a href="accounting.html" class="tile"><i class="fas fa-calculator"></i><h4>Accounting</h4><p>P&amp;L, reports</p></a>
+                <a href="companymgt.html" class="tile"><i class="fas fa-building"></i><h4>Company</h4><p>Team &amp; Projects</p></a>
+                <a href="settings.html" class="tile"><i class="fas fa-cog"></i><h4>Settings</h4><p>Configure</p></a>
+            </div>
+
+            <div class="card"><h3>Recent Activity</h3><p style="color:var(--text-muted);font-size:14px;" id="recentActivity">Loading recent activity...</p></div>
+
+            <div class="card"><h3>Quick Summary</h3><div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:0;" id="summaryGrid">
+                <div><p style="color:var(--text-muted);font-size:13px;">Total Outstanding</p><p style="font-size:24px;font-weight:700;color:var(--dark-green);" id="totalOutstanding">LKR 0</p></div>
+                <div><p style="color:var(--text-muted);font-size:13px;">This Quarter</p><p style="font-size:24px;font-weight:700;color:var(--dark-green);" id="quarterTotal">LKR 0</p></div>
+            </div></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <script>
+        (function initDashboard() {
+            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+            const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+            window.refreshDashboard = async function() {
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) return;
+
+                    const { data: invoices } = await client.from('invoices').select('*');
+                    const { data: estimates } = await client.from('estimates').select('*');
+                    const { data: products } = await client.from('products').select('*');
+                    const { data: customers } = await client.from('customers').select('*');
+
+                    document.getElementById('kpiProducts').innerText = (products || []).length || 0;
+                    document.getElementById('kpiCustomers').innerText = (customers || []).length || 0;
+
+                    const openInv = (invoices || []).filter(i => i.status === 'pending' || i.status === 'sent').length;
+                    const pendingEst = (estimates || []).filter(e => e.status === 'draft' || e.status === 'sent').length;
+                    const paidThisMonth = (invoices || []).filter(i => i.status === 'paid').reduce((sum, i) => sum + parseFloat(i.total_amount || 0), 0);
+                    const overdue = (invoices || []).filter(i => i.status === 'overdue').length;
+
+                    document.getElementById('kpiOpenInvoices').innerText = openInv;
+                    document.getElementById('kpiPendingEst').innerText = pendingEst;
+                    document.getElementById('kpiPaidThisMonth').innerText = 'LKR ' + paidThisMonth.toLocaleString();
+                    document.getElementById('kpiOverdue').innerText = overdue;
+
+                    const outstanding = (invoices || []).filter(i => i.status !== 'paid' && i.status !== 'cancelled').reduce((sum, i) => sum + parseFloat(i.total_amount || 0), 0);
+                    document.getElementById('totalOutstanding').innerText = 'LKR ' + outstanding.toLocaleString();
+                    document.getElementById('quarterTotal').innerText = 'LKR ' + paidThisMonth.toLocaleString();
+
+                    const recent = document.getElementById('recentActivity');
+                    const allItems = [
+                        ...(invoices || []).map(i => ({ ...i, _type: 'invoice', _num: i.invoice_number || 'N/A' })),
+                        ...(estimates || []).map(e => ({ ...e, _type: 'estimate', _num: e.estimate_number || 'N/A' }))
+                    ];
+                    allItems.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                    const recent5 = allItems.slice(0, 5);
+                    if (recent5.length === 0) {
+                        recent.innerHTML = 'No recent activity.';
+                    } else {
+                        recent.innerHTML = recent5.map(item => {
+                            const typeLabel = item._type === 'invoice' ? 'Invoice' : 'Estimate';
+                            const status = item.status || 'draft';
+                            const amt = parseFloat(item.total_amount || 0);
+                            return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;font-size:13px;"><span>${typeLabel} <strong>${escapeHtml(item._num)}</strong></span><span><span class="badge badge-${status}">${status}</span> LKR ${amt.toLocaleString()}</span></div>`;
+                        }).join('');
+                    }
+                } catch (err) {
+                    console.warn('Dashboard load failed:', err);
+                }
+            };
+
+            refreshDashboard();
+        })();
+    </script>
+</body>
+</html>

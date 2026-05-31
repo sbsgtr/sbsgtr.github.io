@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Company Management — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link active"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Company</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-building" style="color:var(--primary-green);"></i> Company Management</h1>
+
+            <div class="kpi-grid">
+                <div class="kpi"><div class="kpi-icon green"><i class="fas fa-users"></i></div><div class="kpi-label">Team Members</div><div class="kpi-val" id="empCount">0</div></div>
+                <div class="kpi"><div class="kpi-icon blue"><i class="fas fa-project-diagram"></i></div><div class="kpi-label">Active Projects</div><div class="kpi-val" id="projectCount">0</div></div>
+                <div class="kpi"><div class="kpi-icon amber"><i class="fas fa-handshake"></i></div><div class="kpi-label">Total Clients</div><div class="kpi-val" id="clientCount">0</div></div>
+            </div>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="company" data-tab="overview" onclick="switchTab('company', 'overview')"><i class="fas fa-info-circle"></i> Overview</button>
+                <button class="tab-btn" data-group="company" data-tab="team" onclick="switchTab('company', 'team')"><i class="fas fa-users"></i> Team</button>
+                <button class="tab-btn" data-group="company" data-tab="projects" onclick="switchTab('company', 'projects')"><i class="fas fa-tasks"></i> Projects</button>
+            </div>
+
+            <div class="tab-section active" data-group="company" data-tab="overview">
+                <div class="card"><h3>Company Overview</h3><p style="color:var(--text-muted);font-size:14px;">NEXWAVE Solutions (Pvt) Ltd — Industrial Technology. Engineered.</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                    <div><p style="color:var(--text-muted);font-size:12px;">Founded</p><p style="font-weight:600;">2017</p></div>
+                    <div><p style="color:var(--text-muted);font-size:12px;">Headquarters</p><p style="font-weight:600;">Colombo, Sri Lanka</p></div>
+                    <div><p style="color:var(--text-muted);font-size:12px;">Team Members</p><p style="font-weight:600;" id="overviewEmp">—</p></div>
+                    <div><p style="color:var(--text-muted);font-size:12px;">Active Projects</p><p style="font-weight:600;" id="overviewProjects">—</p></div>
+                    <div><p style="color:var(--text-muted);font-size:12px;">Total Clients</p><p style="font-weight:600;" id="overviewClients">—</p></div>
+                    <div><p style="color:var(--text-muted);font-size:12px;">Services</p><p style="font-weight:600;">Automation · CNC · Electronics · Infrastructure · Acoustics · Smart Systems</p></div>
+                </div></div>
+            </div>
+
+            <!-- TEAM TAB -->
+            <div class="tab-section" data-group="company" data-tab="team">
+                <button onclick="showTeamForm()" style="margin-bottom:20px;"><i class="fas fa-plus"></i> Add Team Member</button>
+                <div class="card" style="overflow-x:auto;">
+                    <table><thead><tr><th>Name</th><th>Staff ID / Role</th><th>Department</th><th>Mode</th><th>Actions</th></tr></thead><tbody id="teamTable"><tr><td colspan="5" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+
+            <!-- PROJECTS TAB -->
+            <div class="tab-section" data-group="company" data-tab="projects">
+                <button onclick="showProjectForm()" style="margin-bottom:20px;"><i class="fas fa-plus"></i> New Project</button>
+                <div class="card" style="overflow-x:auto;">
+                    <table><thead><tr><th>Name</th><th>Client</th><th>Status</th><th>Start</th><th>End</th><th>Budget</th><th>Actions</th></tr></thead><tbody id="projectsTable"><tr><td colspan="7" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Member Modal -->
+    <div class="overlay" id="teamOverlay"><div class="modal" style="width:520px;"><div class="modal-header"><h3><i class="fas fa-user-plus" style="color:var(--primary-green);"></i> <span id="teamFormTitle">Add Team Member</span></h3><button class="icon-close" onclick="closeModal('teamOverlay')">&times;</button></div><div class="modal-body">
+        <input type="hidden" id="editTeamId">
+        <input type="hidden" id="tOriginalStatus" value="active">
+        <label>Full Name *</label>
+        <input type="text" id="tName" placeholder="Full name">
+        <div class="form-row">
+            <div><label>Staff ID / Role</label><input type="text" id="tRole" placeholder="e.g. ENG-001 or Automation Engineer"></div>
+            <div><label>Mode</label><select id="tStatus" style="width:100%;">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select><span id="modeLockHint" style="display:none;font-size:11px;color:#888;margin-top:4px;"><i class="fas fa-lock"></i> Only admins can change Mode</span></div>
+        </div>
+        <div class="form-row">
+            <div><label>Department</label><select id="tDept" style="width:100%;">
+                <option value="Engineering">Engineering</option>
+                <option value="Sales">Sales &amp; Marketing</option>
+                <option value="Management">Management</option>
+                <option value="Finance">Finance</option>
+                <option value="Operations">Operations</option>
+                <option value="Support">Support</option>
+            </select></div>
+            <div></div>
+        </div>
+    </div><div class="modal-footer">
+        <button onclick="closeModal('teamOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveTeamMember()"><i class="fas fa-save"></i> Save</button>
+    </div></div></div>
+
+    <!-- Project Modal -->
+    <div class="overlay" id="projectOverlay"><div class="modal" style="width:580px;"><div class="modal-header"><h3><i class="fas fa-tasks" style="color:var(--primary-green);"></i> <span id="projectFormTitle">New Project</span></h3><button class="icon-close" onclick="closeModal('projectOverlay')">&times;</button></div><div class="modal-body">
+        <input type="hidden" id="editProjectId">
+        <label>Project Name *</label>
+        <input type="text" id="pjName" placeholder="e.g. ACME Factory Automation">
+        <div class="form-row">
+            <div><label>Client</label><select id="pjClient" style="width:100%;"><option value="">Select client...</option></select></div>
+            <div><label>Status</label><select id="pjStatus" style="width:100%;">
+                <option value="active">Active</option>
+                <option value="on_hold">On Hold</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select></div>
+        </div>
+        <div class="form-row">
+            <div><label>Start Date</label><input type="date" id="pjStart"></div>
+            <div><label>End Date</label><input type="date" id="pjEnd"></div>
+        </div>
+        <label>Budget (LKR)</label>
+        <input type="number" id="pjBudget" placeholder="0.00" step="0.01" min="0">
+        <label>Description</label>
+        <textarea id="pjDesc" rows="3" placeholder="Project description..." style="resize:vertical;"></textarea>
+    </div><div class="modal-footer">
+        <button onclick="closeModal('projectOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveProject()"><i class="fas fa-save"></i> Save Project</button>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <script>
+        (function initCompany() {
+            const client = getSupabaseClient();
+            let teamTable = 'staff_registry';
+            let currentUserEmail = '';
+            const ADMIN_EMAIL = 'admin@nexwavex.com';
+
+            function isAdmin() {
+                return currentUserEmail === ADMIN_EMAIL || currentUserEmail === 'subhashgt@icloud.com';
+            }
+
+            function normalizeTeamMember(row) {
+                if (!row) return null;
+                return {
+                    id: row.id,
+                    full_name: row.full_name || row.name || '',
+                    staff_id: row.staff_id || row.role || '',
+                    department: row.department || 'General',
+                    status: row.status || 'active',
+                    email: row.email || '',
+                    phone: row.phone || ''
+                };
+            }
+
+            function teamPayloadFromForm() {
+                return {
+                    full_name: document.getElementById('tName').value.trim(),
+                    staff_id: document.getElementById('tRole').value.trim(),
+                    department: document.getElementById('tDept').value,
+                    status: document.getElementById('tStatus').value
+                };
+            }
+
+            function teamPayloadForLegacyTable(payload) {
+                return {
+                    name: payload.full_name,
+                    role: payload.staff_id,
+                    department: payload.department
+                };
+            }
+
+            async function fetchTeamMembers() {
+                const staffResult = await client.from('staff_registry').select('*');
+                const teamResult = await client.from('team_members').select('*');
+
+                const staffRows = (!staffResult.error && staffResult.data) ? staffResult.data : [];
+                const teamRows = (!teamResult.error && teamResult.data) ? teamResult.data : [];
+
+                if (staffRows.length > 0) {
+                    teamTable = 'staff_registry';
+                    return staffRows.map(normalizeTeamMember).sort((a, b) =>
+                        a.full_name.localeCompare(b.full_name)
+                    );
+                }
+                if (teamRows.length > 0) {
+                    teamTable = 'team_members';
+                    return teamRows.map(normalizeTeamMember).sort((a, b) =>
+                        a.full_name.localeCompare(b.full_name)
+                    );
+                }
+                if (!staffResult.error) {
+                    teamTable = 'staff_registry';
+                    return [];
+                }
+                if (!teamResult.error) {
+                    teamTable = 'team_members';
+                    return [];
+                }
+
+                throw staffResult.error || teamResult.error || new Error('Could not load team members. Run supabase/migrations/staff_registry.sql in Supabase SQL Editor.');
+            }
+
+            function showTeamLoadError(message) {
+                const tbody = document.getElementById('teamTable');
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#c62828;">${escapeHtml(message)}</td></tr>`;
+            }
+
+            /* ── LOAD ALL ── */
+            async function loadAll() {
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) {
+                        showTeamLoadError('Please log in to view team members.');
+                        return;
+                    }
+                    if (user) currentUserEmail = user.email || '';
+
+                    const team = await fetchTeamMembers();
+                    const { data: customers, error: custErr } = await client.from('customers').select('id,contact_person,company_name');
+                    if (custErr) console.warn('Customers load:', custErr);
+
+                    let projects = [];
+                    const { data: p, error: projErr } = await client.from('projects').select('*').order('created_at', { ascending: false });
+                    if (projErr) {
+                        console.warn('Projects load:', projErr);
+                        if (projErr.message && projErr.message.includes('client_id')) {
+                            document.getElementById('projectsTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#c62828;">Missing column: Run <code>ALTER TABLE projects ADD COLUMN client_id UUID REFERENCES customers(id) ON DELETE SET NULL;</code> in Supabase SQL Editor.</td></tr>';
+                        }
+                    } else {
+                        projects = p || [];
+                    }
+
+                    const empCount = team.filter(m => m.status !== 'inactive').length;
+                    const activeProj = projects.filter(p => p.status === 'active').length;
+                    const clientCount = (customers || []).length;
+
+                    document.getElementById('empCount').innerText = empCount;
+                    document.getElementById('projectCount').innerText = activeProj;
+                    document.getElementById('clientCount').innerText = clientCount;
+                    document.getElementById('overviewEmp').innerText = empCount + ' members';
+                    document.getElementById('overviewProjects').innerText = activeProj > 0 ? activeProj + ' active' : 'N/A';
+                    document.getElementById('overviewClients').innerText = clientCount + ' clients';
+
+                    renderTeam(team);
+                    renderProjects(projects);
+                    populateClientDropdown(customers);
+                } catch (err) {
+                    console.warn('Company data load failed:', err);
+                    showTeamLoadError(err.message || 'Could not load team data.');
+                }
+            }
+
+            function renderTeam(team) {
+                const tbody = document.getElementById('teamTable');
+                if (!team || team.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;">No team members yet. Add your first one!</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = team.map(m => `<tr>
+                    <td><strong>${escapeHtml(m.full_name)}</strong></td>
+                    <td>${escapeHtml(m.staff_id || '—')}</td>
+                    <td><span class="cat-tag">${escapeHtml(m.department || 'General')}</span></td>
+                    <td><span class="badge badge-${m.status === 'active' ? 'income' : 'expense'}">${escapeHtml(m.status || 'active')}</span></td>
+                    <td><button class="btn-sm blue" onclick="editTeamMember('${m.id}')"><i class="fas fa-edit"></i></button> <button class="btn-sm red" onclick="deleteTeamMember('${m.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('');
+            }
+
+            window.showTeamForm = function() {
+                document.getElementById('editTeamId').value = '';
+                document.getElementById('teamFormTitle').innerText = 'Add Team Member';
+                document.getElementById('tName').value = '';
+                document.getElementById('tRole').value = '';
+                document.getElementById('tDept').value = 'Engineering';
+                document.getElementById('tStatus').value = 'active';
+                document.getElementById('tOriginalStatus').value = 'active';
+                document.getElementById('tStatus').disabled = !isAdmin();
+                document.getElementById('modeLockHint').style.display = isAdmin() ? 'none' : 'block';
+                openModal('teamOverlay');
+            };
+
+            window.editTeamMember = async function(id) {
+                try {
+                    let result = await client.from(teamTable).select('*').eq('id', id).single();
+                    if (result.error && teamTable === 'staff_registry') {
+                        result = await client.from('team_members').select('*').eq('id', id).single();
+                        if (!result.error) teamTable = 'team_members';
+                    }
+                    if (result.error || !result.data) {
+                        showToast('Member not found.', 'error');
+                        return;
+                    }
+                    const data = normalizeTeamMember(result.data);
+                    document.getElementById('editTeamId').value = id;
+                    document.getElementById('teamFormTitle').innerText = 'Edit Team Member';
+                    document.getElementById('tName').value = data.full_name;
+                    document.getElementById('tRole').value = data.staff_id;
+                    document.getElementById('tDept').value = data.department;
+                    document.getElementById('tStatus').value = data.status;
+                    document.getElementById('tOriginalStatus').value = data.status;
+                    document.getElementById('tStatus').disabled = !isAdmin();
+                    document.getElementById('modeLockHint').style.display = isAdmin() ? 'none' : 'block';
+                    openModal('teamOverlay');
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.saveTeamMember = async function() {
+                const name = document.getElementById('tName').value.trim();
+                if (!name) { showToast('Name is required.', 'error'); return; }
+                const editId = document.getElementById('editTeamId').value;
+                const payload = teamPayloadFromForm();
+
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) { showToast('Please log in first.', 'error'); return; }
+
+                    // Prevent non-admins from changing Mode
+                    if (editId && !isAdmin()) {
+                        const origStatus = document.getElementById('tOriginalStatus').value;
+                        if (payload.status !== origStatus) {
+                            payload.status = origStatus;
+                        }
+                    }
+
+                    if (editId) {
+                        let result = await client.from(teamTable).update(
+                            teamTable === 'team_members' ? teamPayloadForLegacyTable(payload) : payload
+                        ).eq('id', editId).select();
+                        if (result.error && teamTable === 'staff_registry') {
+                            teamTable = 'team_members';
+                            result = await client.from('team_members').update(teamPayloadForLegacyTable(payload)).eq('id', editId).select();
+                        }
+                        if (result.error) throw result.error;
+                        showToast('Team member updated!');
+                    } else {
+                        let result = await client.from(teamTable).insert(
+                            teamTable === 'team_members' ? teamPayloadForLegacyTable(payload) : payload
+                        ).select();
+                        if (result.error && teamTable === 'staff_registry') {
+                            teamTable = 'team_members';
+                            result = await client.from('team_members').insert(teamPayloadForLegacyTable(payload)).select();
+                        }
+                        if (result.error) throw result.error;
+                        showToast('Team member added!');
+                    }
+                    closeModal('teamOverlay');
+                    loadAll();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                    console.error('saveTeamMember:', err);
+                }
+            };
+
+            window.deleteTeamMember = async function(id) {
+                if (!confirm('Remove this team member?')) return;
+                try {
+                    let result = await client.from(teamTable).delete().eq('id', id);
+                    if (result.error && teamTable === 'staff_registry') {
+                        result = await client.from('team_members').delete().eq('id', id);
+                        if (!result.error) teamTable = 'team_members';
+                    }
+                    if (result.error) throw result.error;
+                    showToast('Team member removed.');
+                    loadAll();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            function populateClientDropdown(customers) {
+                const sel = document.getElementById('pjClient');
+                sel.innerHTML = '<option value="">Select client...</option>' + (customers || []).map(c => `<option value="${c.id}">${escapeHtml(c.contact_person)}${c.company_name ? ' ('+escapeHtml(c.company_name)+')' : ''}</option>`).join('');
+            }
+
+            function renderProjects(projects) {
+                const tbody = document.getElementById('projectsTable');
+                if (!projects || projects.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;">No projects yet. The projects table needs to be created in your database first.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = projects.map(p => {
+                    const statusClass = p.status === 'completed' ? 'delivered' : p.status === 'on_hold' ? 'pending' : p.status === 'cancelled' ? 'expense' : 'income';
+                    return `<tr>
+                        <td><strong>${escapeHtml(p.name)}</strong></td>
+                        <td>${escapeHtml(p.client_name || '—')}</td>
+                        <td><span class="badge badge-${statusClass}">${(p.status || 'active').replace(/_/g, ' ')}</span></td>
+                        <td>${p.start_date ? new Date(p.start_date).toLocaleDateString() : '—'}</td>
+                        <td>${p.end_date ? new Date(p.end_date).toLocaleDateString() : '—'}</td>
+                        <td>LKR ${parseFloat(p.budget || 0).toLocaleString()}</td>
+                        <td><button class="btn-sm blue" onclick="editProject('${p.id}')"><i class="fas fa-edit"></i></button> <button class="btn-sm red" onclick="deleteProject('${p.id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
+                }).join('');
+            }
+
+            window.showProjectForm = function() {
+                document.getElementById('editProjectId').value = '';
+                document.getElementById('projectFormTitle').innerText = 'New Project';
+                document.getElementById('pjName').value = '';
+                document.getElementById('pjDesc').value = '';
+                document.getElementById('pjStatus').value = 'active';
+                document.getElementById('pjStart').value = new Date().toISOString().split('T')[0];
+                document.getElementById('pjEnd').value = '';
+                document.getElementById('pjBudget').value = '';
+                openModal('projectOverlay');
+            };
+
+            window.editProject = async function(id) {
+                try {
+                    const { data, error } = await client.from('projects').select().eq('id', id).single();
+                    if (error || !data) { showToast('Project not found.', 'error'); return; }
+                    document.getElementById('editProjectId').value = id;
+                    document.getElementById('projectFormTitle').innerText = 'Edit Project';
+                    document.getElementById('pjName').value = data.name || '';
+                    document.getElementById('pjDesc').value = data.description || '';
+                    document.getElementById('pjStatus').value = data.status || 'active';
+                    document.getElementById('pjStart').value = data.start_date ? data.start_date.split('T')[0] : '';
+                    document.getElementById('pjEnd').value = data.end_date ? data.end_date.split('T')[0] : '';
+                    document.getElementById('pjBudget').value = data.budget || '';
+                    document.getElementById('pjClient').value = data.client_id || '';
+                    openModal('projectOverlay');
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.saveProject = async function() {
+                const name = document.getElementById('pjName').value.trim();
+                if (!name) { showToast('Project name is required.', 'error'); return; }
+                const editId = document.getElementById('editProjectId').value;
+                const payload = {
+                    name,
+                    description: document.getElementById('pjDesc').value.trim(),
+                    client_id: document.getElementById('pjClient').value || null,
+                    client_name: document.getElementById('pjClient').value ? document.getElementById('pjClient').selectedOptions[0].text.split(' (')[0] : '',
+                    status: document.getElementById('pjStatus').value,
+                    start_date: document.getElementById('pjStart').value || null,
+                    end_date: document.getElementById('pjEnd').value || null,
+                    budget: parseFloat(document.getElementById('pjBudget').value) || 0
+                };
+                try {
+                    if (editId) {
+                        const { error } = await client.from('projects').update(payload).eq('id', editId);
+                        if (error) throw error;
+                        showToast('Project updated!');
+                    } else {
+                        const { error } = await client.from('projects').insert(payload);
+                        if (error) throw error;
+                        showToast('Project created!');
+                    }
+                    closeModal('projectOverlay');
+                    loadAll();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.deleteProject = async function(id) {
+                if (!confirm('Delete this project?')) return;
+                try {
+                    await client.from('projects').delete().eq('id', id);
+                    showToast('Project deleted.');
+                    loadAll();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            loadAll();
+            checkAuth();
+        })();
+    </script>
+</body>
+</html>

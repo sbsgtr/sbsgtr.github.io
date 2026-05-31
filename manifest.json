@@ -1,0 +1,27 @@
+{
+  "name": "NEXWAVE CORE",
+  "short_name": "NEXWAVE",
+  "description": "Industrial ERP & Business Suite by NEXWAVE Solutions",
+  "start_url": "/pages/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b2b0f",
+  "theme_color": "#0b2b0f",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "dir": "ltr"
+}

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Estimates & Invoices — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .form-row, .form-row-3, .form-row-4 { grid-template-columns: 1fr; } }
+        .line-item { display: grid; grid-template-columns: 2fr 2fr 60px 100px 100px 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .line-item input { padding: 8px 10px; font-size: 12px; }
+        .line-item .btn-sm { height: 34px; }
+        @media (max-width: 800px) { .line-item { grid-template-columns: 1fr 1fr; } }
+        .li-header { display: grid; grid-template-columns: 2fr 2fr 60px 100px 100px 36px; gap: 8px; padding: 6px 0; font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; }
+        @media (max-width: 800px) { .li-header { display: none; } }
+        .totals-bar { display: flex; justify-content: flex-end; gap: 30px; margin-top: 12px; padding-top: 12px; border-top: 2px solid #eee; }
+        .totals-bar div { text-align: right; }
+        .totals-bar .label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .totals-bar .value { font-size: 20px; font-weight: 700; color: var(--dark-green); }
+        .doc-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .doc-actions .btn-sm { font-size: 11px; padding: 4px 10px; }
+        .badge-proforma { background: #e3f2fd; color: #1565c0; }
+        .badge-dn { background: #fce4ec; color: #c62828; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link active"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Estimates &amp; Invoices</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-file-invoice" style="color:var(--primary-green);"></i> Estimates &amp; Invoices</h1>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="estInv" data-tab="estimates" onclick="switchTab('estInv', 'estimates')"><i class="fas fa-file-signature"></i> Estimates</button>
+                <button class="tab-btn" data-group="estInv" data-tab="dn" onclick="switchTab('estInv', 'dn')"><i class="fas fa-file-invoice-dollar"></i> Debit Notes</button>
+                <button class="tab-btn" data-group="estInv" data-tab="invoices" onclick="switchTab('estInv', 'invoices')"><i class="fas fa-receipt"></i> Invoices</button>
+            </div>
+
+            <!-- ESTIMATES TAB -->
+            <div class="tab-section active" data-group="estInv" data-tab="estimates" id="estimatesTab">
+                <button onclick="showEstimateForm()" style="margin-bottom:20px;"><i class="fas fa-plus"></i> New Estimate</button>
+                <div class="card" style="overflow-x:auto;">
+                    <table><thead><tr><th>Number</th><th>Client</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="estimatesTable"><tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+
+            <!-- DEBIT NOTES TAB -->
+            <div class="tab-section" data-group="estInv" data-tab="dn" id="dnTab">
+                <div class="card" style="overflow-x:auto;">
+                    <table><thead><tr><th>Number</th><th>Client</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dnTable"><tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+
+            <!-- INVOICES TAB -->
+            <div class="tab-section" data-group="estInv" data-tab="invoices" id="invoicesTab">
+                <button onclick="showInvoiceForm()" style="margin-bottom:20px;"><i class="fas fa-plus"></i> New Invoice</button>
+                <div class="card" style="overflow-x:auto;">
+                    <table><thead><tr><th>Number</th><th>Client</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="invoicesTable"><tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estimate Modal -->
+    <div class="overlay" id="estimateOverlay"><div class="modal" style="width:720px;"><div class="modal-header"><h3><i class="fas fa-file-signature" style="color:var(--primary-green);"></i> <span id="estFormTitle">New Estimate</span></h3><button class="icon-close" onclick="closeModal('estimateOverlay')">&times;</button></div><div class="modal-body" style="max-height:70vh;">
+        <input type="hidden" id="editEstimateId">
+        <div class="form-row">
+            <div><label>Client *</label><select id="estClient" style="width:100%;"><option value="">Select client...</option></select></div>
+            <div><label>Date</label><input type="date" id="estDate"></div>
+        </div>
+        <div class="form-row">
+            <div><label>Payment Terms</label><input type="text" id="estTerms" placeholder="e.g. Net 30"></div>
+            <div><label>PO / Ref Number</label><input type="text" id="estPoNumber" placeholder="Client PO #"></div>
+        </div>
+        <label style="margin-top:16px;">Estimate Items</label>
+        <div class="li-header"><span>Product/Service</span><span>Description</span><span>Qty</span><span>Unit Price</span><span>Total</span><span></span></div>
+        <div id="estimateItems"></div>
+        <button class="btn-ghost" style="width:100%;padding:8px;font-size:12px;margin-bottom:8px;" onclick="addEstimateLineItem()"><i class="fas fa-plus"></i> Add Item</button>
+        <div class="totals-bar">
+            <div><div class="label">Subtotal</div><div class="value" id="estimateDisplay">LKR 0.00</div></div>
+        </div>
+        <input type="hidden" id="estimateTotal" value="0">
+    </div><div class="modal-footer">
+        <button onclick="closeModal('estimateOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveEstimate()"><i class="fas fa-save"></i> Save Estimate</button>
+    </div></div></div>
+
+    <!-- Convert EST Modal (choose DN, Proforma, or Invoice) -->
+    <div class="overlay" id="convertEstOverlay"><div class="modal" style="width:460px;"><div class="modal-header"><h3><i class="fas fa-exchange-alt" style="color:var(--primary-green);"></i> Convert Estimate</h3><button class="icon-close" onclick="closeModal('convertEstOverlay')">&times;</button></div><div class="modal-body" style="text-align:center;">
+        <input type="hidden" id="convertEstId">
+        <p style="margin-bottom:20px;color:#666;font-size:14px;">Convert estimate <strong id="convertEstNum">#</strong> to:</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <button id="convertToDN" class="btn-green" onclick="doConvert('dn')" style="padding:14px;font-size:15px;">
+                <i class="fas fa-file-invoice-dollar"></i> Debit Note (DN)<br>
+                <span style="font-size:11px;font-weight:400;">Records as an expense</span>
+            </button>
+            <button id="convertToProforma" class="btn" style="background:#1565c0;color:#fff;padding:14px;font-size:15px;border:none;border-radius:10px;cursor:pointer;" onclick="doConvert('proforma')">
+                <i class="fas fa-file-contract"></i> Proforma Invoice<br>
+                <span style="font-size:11px;font-weight:400;">Quotation-style invoice, no payment tracking</span>
+            </button>
+            <button id="convertToInvoice" class="btn" style="background:#e65100;color:#fff;padding:14px;font-size:15px;border:none;border-radius:10px;cursor:pointer;" onclick="doConvert('invoice')">
+                <i class="fas fa-file-invoice"></i> Invoice<br>
+                <span style="font-size:11px;font-weight:400;">Final invoice — pending payment</span>
+            </button>
+        </div>
+    </div><div class="modal-footer">
+        <button onclick="closeModal('convertEstOverlay')" class="btn-close">Cancel</button>
+    </div></div></div>
+
+    <!-- Invoice Modal -->
+    <div class="overlay" id="invoiceOverlay"><div class="modal" style="width:720px;"><div class="modal-header"><h3><i class="fas fa-receipt" style="color:var(--primary-green);"></i> <span id="invFormTitle">New Invoice</span></h3><button class="icon-close" onclick="closeModal('invoiceOverlay')">&times;</button></div><div class="modal-body" style="max-height:70vh;">
+        <input type="hidden" id="editInvoiceId">
+        <div class="form-row">
+            <div><label>Client *</label><select id="invClient" style="width:100%;"><option value="">Select client...</option></select></div>
+            <div><label>Date</label><input type="date" id="invDate"></div>
+        </div>
+        <div class="form-row-3">
+            <div><label>Status</label><select id="invStatus" style="width:100%;">
+                <option value="pending">Pending</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+                <option value="cancelled">Cancelled</option>
+            </select></div>
+            <div><label>Due Date</label><input type="date" id="invDueDate"></div>
+            <div><label>From Estimate</label><select id="invFromEstimate" style="width:100%;"><option value="">Manual Entry</option></select></div>
+        </div>
+        <label style="margin-top:16px;">Invoice Items</label>
+        <div class="li-header"><span>Product/Service</span><span>Description</span><span>Qty</span><span>Unit Price</span><span>Total</span><span></span></div>
+        <div id="invoiceItems"></div>
+        <button class="btn-ghost" style="width:100%;padding:8px;font-size:12px;margin-bottom:8px;" onclick="addInvoiceLineItem()"><i class="fas fa-plus"></i> Add Item</button>
+        <div class="totals-bar">
+            <div><div class="label">Total</div><div class="value" id="invoiceDisplay">LKR 0.00</div></div>
+        </div>
+        <input type="hidden" id="invoiceTotal" value="0">
+    </div><div class="modal-footer">
+        <button onclick="closeModal('invoiceOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveInvoice()"><i class="fas fa-save"></i> Save Invoice</button>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <script>
+        (function initEstInv() {
+            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+            const client = supabase.createClient(supabaseUrl, supabaseKey);
+            let customerMap = {};
+            let currentUserEmail = '';
+            const ADMIN_EMAIL = 'admin@nexwavex.com';
+
+            async function checkUser() {
+                const { data: { user } } = await client.auth.getUser();
+                if (user) currentUserEmail = user.email || '';
+                return user;
+            }
+
+            function isAdmin() {
+                return currentUserEmail === ADMIN_EMAIL || currentUserEmail === 'subhashgt@icloud.com';
+            }
+
+            function isLocked(status) {
+                return status === 'DN Created' || status === 'Invoice Created';
+            }
+
+            function isEditable(status) {
+                return status === 'Estimate' || status === 'Proforma Invoice';
+            }
+
+            async function loadCustomerDropdowns() {
+                const { data } = await client.from('customers').select('id,contact_person,company_name,address,city,email,contact_number').order('contact_person');
+                const customers = data || [];
+                customerMap = {};
+                customers.forEach(c => { customerMap[c.id] = c; });
+                ['estClient','invClient'].forEach(id => {
+                    const sel = document.getElementById(id);
+                    if (!sel) return;
+                    sel.innerHTML = '<option value="">Select client...</option>' + 
+                        customers.map(c => `<option value="${c.id}">${escapeHtml(c.contact_person)}${c.company_name ? ' ('+escapeHtml(c.company_name)+')' : ''}</option>`).join('');
+                });
+                return customers;
+            }
+
+            async function loadEstimateDropdown() {
+                const { data } = await client.from('estimates').select('id,estimate_number,total_amount').order('created_at', { ascending: false });
+                const sel = document.getElementById('invFromEstimate');
+                if (!sel) return;
+                sel.innerHTML = '<option value="">Manual Entry</option>' + 
+                    (data || []).map(e => `<option value="${e.id}">${escapeHtml(e.estimate_number || 'N/A')} (LKR ${parseFloat(e.total_amount||0).toLocaleString()})</option>`).join('');
+            }
+
+            /* ── ESTIMATES ── */
+            async function loadEstimates() {
+                try {
+                    await checkUser();
+                    const { data, error } = await client.from('estimates').select('*').order('created_at', { ascending: false });
+                    if (error) throw error;
+                    const tbody = document.getElementById('estimatesTable');
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No estimates yet.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.map(e => {
+                        const c = customerMap[e.customer_id];
+                        const cn = c ? (c.contact_person + (c.company_name ? ' ('+c.company_name+')' : '')) : '—';
+                        const status = e.status || 'Estimate';
+                        const locked = isLocked(status);
+                        const editable = isEditable(status);
+                        const isEst = status === 'Estimate';
+                        const badgeClass = status === 'Estimate' ? 'draft' : status === 'DN Created' ? 'dn' : status === 'Proforma Invoice' ? 'proforma' : status === 'Invoice Created' ? 'income' : status;
+                        const convertTitle = status === 'DN Created' ? 'Convert to Invoice' : status === 'Invoice Created' || status === 'Proforma Invoice' ? '' : 'Convert to DN / Proforma / Invoice';
+                        return `<tr>
+                            <td><strong>${escapeHtml(e.estimate_number || 'N/A')}</strong></td>
+                            <td>${escapeHtml(cn)}</td>
+                            <td>${e.created_at ? new Date(e.created_at).toLocaleDateString() : '—'}</td>
+                            <td>LKR ${parseFloat(e.total_amount || 0).toLocaleString()}</td>
+                            <td><span class="badge badge-${badgeClass}">${status}</span></td>
+                            <td>
+                                <div class="doc-actions">
+                                    <button class="btn-sm blue" onclick="editEstimate('${e.id}')" ${locked ? 'style="opacity:0.5" title="Document is locked and cannot be edited"' : ''}><i class="fas fa-edit"></i></button>
+                                    ${convertTitle ? `<button class="btn-sm" style="background:#1565c0;color:#fff;" onclick="showConvertEstDialog('${e.id}')" title="${convertTitle}"><i class="fas fa-exchange-alt"></i></button>` : ''}
+                                    <button class="btn-sm" style="background:var(--primary-green);color:#fff;" onclick="previewEstimatePrint('${e.id}')" title="Print Preview"><i class="fas fa-print"></i></button>
+                                    <button class="btn-sm red" onclick="deleteEstimate('${e.id}')" ${!isEst ? 'style="opacity:0.5" title="Only estimates can be deleted"' : ''}><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                } catch (err) {
+                    console.warn('Estimates load failed:', err);
+                    document.getElementById('estimatesTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load.</td></tr>';
+                }
+            }
+
+            window.showEstimateForm = async function() {
+                document.getElementById('editEstimateId').value = '';
+                document.getElementById('estFormTitle').innerText = 'New Estimate';
+                document.getElementById('estDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('estTerms').value = 'Net 30';
+                document.getElementById('estPoNumber').value = '';
+                document.getElementById('estimateItems').innerHTML = '';
+                document.getElementById('estimateDisplay').innerText = 'LKR 0.00';
+                document.getElementById('estimateTotal').value = '0';
+                await loadCustomerDropdowns();
+                addEstimateLineItem();
+                openModal('estimateOverlay');
+            };
+
+            window.addEstimateLineItem = function() {
+                addLineItem('estimateItems', '', '', 1, 0);
+                recalcTotals('estimateItems');
+            };
+
+            window.editEstimate = async function(id) {
+                try {
+                    const { data, error } = await client.from('estimates').select().eq('id', id).single();
+                    if (error || !data) return;
+                    if (isLocked(data.status)) { showToast('Document is locked and cannot be edited.', 'error'); return; }
+                    await loadCustomerDropdowns();
+                    document.getElementById('editEstimateId').value = id;
+                    document.getElementById('estFormTitle').innerText = 'Edit Estimate #' + (data.estimate_number || '');
+                    document.getElementById('estClient').value = data.customer_id || '';
+                    document.getElementById('estDate').value = data.created_at ? data.created_at.split('T')[0] : '';
+                    document.getElementById('estTerms').value = data.payment_terms || 'Net 30';
+                    document.getElementById('estPoNumber').value = data.po_number || '';
+                    document.getElementById('estimateItems').innerHTML = '';
+                    const { data: items } = await client.from('estimate_items').select('*').eq('estimate_number', data.estimate_number);
+                    if (items && items.length > 0) {
+                        items.forEach(item => {
+                            addLineItem('estimateItems', item.product_name || '', '', item.qty || 1, item.price || 0);
+                        });
+                    } else {
+                        addLineItem('estimateItems', '', '', 1, 0);
+                    }
+                    recalcTotals('estimateItems');
+                    openModal('estimateOverlay');
+                } catch (err) {
+                    showToast('Error loading estimate: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.saveEstimate = async function() {
+                const customerId = document.getElementById('estClient').value;
+                if (!customerId) { showToast('Please select a client.', 'error'); return; }
+                const editId = document.getElementById('editEstimateId').value;
+                const items = getLineItems('estimateItems');
+                const total = items.reduce((s, i) => s + i.total, 0);
+                if (total <= 0) { showToast('Add at least one item with a positive total.', 'error'); return; }
+                try {
+                    let estNum;
+                    const createdAt = document.getElementById('estDate').value || new Date().toISOString();
+                    const paymentTerms = document.getElementById('estTerms').value.trim();
+                    const poNumber = document.getElementById('estPoNumber').value.trim();
+
+                    if (editId) {
+                        const { data: ex } = await client.from('estimates').select('estimate_number').eq('id', editId).single();
+                        estNum = ex?.estimate_number;
+                        const { error } = await client.from('estimates').update({ 
+                            customer_id: customerId, total_amount: total, 
+                            payment_terms: paymentTerms, po_number: poNumber,
+                        }).eq('id', editId);
+                        if (error) throw error;
+                        await client.from('estimate_items').delete().eq('estimate_number', estNum);
+                        showToast('Estimate updated!');
+                    } else {
+                        estNum = 'EST-' + Date.now().toString(36).toUpperCase();
+                        const { error } = await client.from('estimates').insert({ 
+                            customer_id: customerId, estimate_number: estNum, 
+                            total_amount: total, status: 'Estimate',
+                            payment_terms: paymentTerms, po_number: poNumber,
+                            created_at: createdAt 
+                        });
+                        if (error) throw error;
+                        showToast('Estimate created!');
+                    }
+                    if (items.length > 0) {
+                        const { error: ie } = await client.from('estimate_items').insert(
+                            items.map(i => ({ estimate_number: estNum, product_name: i.description || '', qty: i.quantity, price: i.unit_price, total: i.total }))
+                        );
+                        if (ie) throw ie;
+                    }
+                    closeModal('estimateOverlay');
+                    loadEstimates();
+                    loadEstimateDropdown();
+                } catch (err) {
+                    showToast('Error saving estimate: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.deleteEstimate = async function(id) {
+                if (!confirm('Delete this estimate?')) return;
+                try {
+                    const { data } = await client.from('estimates').select('estimate_number,status').eq('id', id).single();
+                    if (!data) return;
+                    if (data.status !== 'Estimate' && data.status !== 'draft') { showToast('Only estimates can be deleted.', 'error'); return; }
+                    if (data) await client.from('estimate_items').delete().eq('estimate_number', data.estimate_number);
+                    await client.from('estimates').delete().eq('id', id);
+                    showToast('Estimate deleted.');
+                    loadEstimates();
+                    loadEstimateDropdown();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            /* ── CONVERT ESTIMATE ── */
+            window.showConvertEstDialog = async function(estId) {
+                try {
+                    const { data } = await client.from('estimates').select('estimate_number,status').eq('id', estId).single();
+                    if (!data) return;
+                    if (data.status === 'Proforma Invoice' || data.status === 'Invoice Created') { showToast('This estimate cannot be converted further.', 'error'); return; }
+                    document.getElementById('convertEstId').value = estId;
+                    document.getElementById('convertEstNum').innerText = '#' + (data.estimate_number || 'N/A');
+
+                    // Show/hide convert options based on current status
+                    if (data.status === 'DN Created') {
+                        document.getElementById('convertToDN').style.display = 'none';
+                        document.getElementById('convertToProforma').style.display = 'none';
+                        document.getElementById('convertToInvoice').style.display = 'block';
+                    } else {
+                        document.getElementById('convertToDN').style.display = 'block';
+                        document.getElementById('convertToProforma').style.display = 'block';
+                        document.getElementById('convertToInvoice').style.display = 'block';
+                    }
+
+                    openModal('convertEstOverlay');
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.doConvert = async function(targetType) {
+                const estId = document.getElementById('convertEstId').value;
+                if (!estId) return;
+                closeModal('convertEstOverlay');
+                
+                try {
+                    const { data: est, error: eErr } = await client.from('estimates').select('*').eq('id', estId).single();
+                    if (eErr || !est) throw eErr || new Error('Not found');
+                    
+                    const { data: items } = await client.from('estimate_items').select('*').eq('estimate_number', est.estimate_number);
+                    const lineItems = (items || []).map(i => ({
+                        description: i.product_name || '',
+                        notes: '',
+                        quantity: i.qty || 1,
+                        unit_price: i.price || 0,
+                        total: i.total || 0
+                    }));
+                    
+                    if (targetType === 'dn') {
+                        // Debit Note → record as expense
+                        const dnNum = 'DN-' + Date.now().toString(36).toUpperCase();
+                        const dnPayload = {
+                            date: new Date().toISOString().split('T')[0],
+                            amount: parseFloat(est.total_amount || 0),
+                            description: 'Debit Note ' + dnNum + ' — from EST ' + (est.estimate_number || ''),
+                            category: 'debit_note',
+                            vendor: customerMap[est.customer_id]?.contact_person || '',
+                            invoice_no: dnNum,
+                            notes: 'Converted from ' + (est.estimate_number || '') + '. Items: ' + JSON.stringify(lineItems),
+                            has_invoice: false,
+                            is_recurring: false
+                        };
+                        const { error: expErr } = await client.from('expenses').insert(dnPayload);
+                        if (expErr) throw expErr;
+                        
+                        // Also mark estimate as converted
+                        await client.from('estimates').update({ status: 'DN Created' }).eq('id', estId);
+                        showToast('Debit Note created & recorded as expense!');
+                    } else if (targetType === 'proforma') {
+                        // Proforma Invoice
+                        const pfNum = 'PF-' + Date.now().toString(36).toUpperCase();
+                        const { error: invErr } = await client.from('invoices').insert({
+                            customer_id: est.customer_id,
+                            invoice_number: pfNum,
+                            status: 'proforma',
+                            total_amount: parseFloat(est.total_amount || 0),
+                            items: lineItems
+                        });
+                        if (invErr) throw invErr;
+                        await client.from('estimates').update({ status: 'Proforma Invoice' }).eq('id', estId);
+                        showToast('Proforma Invoice created!');
+                    } else {
+                        // Final Invoice → pending payment
+                        const invNum = 'INV-' + Date.now().toString(36).toUpperCase();
+                        const { error: invErr } = await client.from('invoices').insert({
+                            customer_id: est.customer_id,
+                            invoice_number: invNum,
+                            status: 'pending',
+                            total_amount: parseFloat(est.total_amount || 0),
+                            items: lineItems
+                        });
+                        if (invErr) throw invErr;
+                        await client.from('estimates').update({ status: 'Invoice Created' }).eq('id', estId);
+                        showToast('Invoice created! Status: Pending Payment');
+                    }
+                    
+                    loadEstimates();
+                    loadInvoices();
+                    loadDNs();
+                } catch (err) {
+                    showToast('Conversion error: ' + (err.message || err), 'error');
+                }
+            };
+
+            /* ── PRINT PREVIEW ── */
+            async function getCompanySettings() {
+                try {
+                    const { data } = await client.from('app_settings').select('*').limit(1).maybeSingle();
+                    return data || {};
+                } catch (e) { return {}; }
+            }
+
+            async function buildDocConfigFromEst(estId) {
+                const { data: est } = await client.from('estimates').select('*').eq('id', estId).single();
+                if (!est) return null;
+                const { data: items } = await client.from('estimate_items').select('*').eq('estimate_number', est.estimate_number);
+                const customer = customerMap[est.customer_id];
+                const company = await getCompanySettings();
+                return {
+                    type: 'estimate',
+                    number: est.estimate_number || '',
+                    date: est.created_at,
+                    customer: customer || null,
+                    items: (items || []).map(i => ({
+                        description: i.product_name || '',
+                        quantity: i.qty || 0,
+                        unit_price: i.price || 0,
+                        total: i.total || 0
+                    })),
+                    totals: { total: est.total_amount || 0, status: est.status },
+                    notes: '',
+                    footnotes: 'Payment Terms: ' + (est.payment_terms || 'Net 30') + (est.po_number ? ' | PO: ' + est.po_number : ''),
+                    company,
+                    po_number: est.po_number || ''
+                };
+            }
+
+            async function buildDocConfigFromInv(invId) {
+                const { data: inv } = await client.from('invoices').select('*').eq('id', invId).single();
+                if (!inv) return null;
+                let items = inv.items;
+                if (typeof items === 'string') try { items = JSON.parse(items); } catch(e) { items = []; }
+                if (!Array.isArray(items)) items = [];
+                const customer = customerMap[inv.customer_id];
+                const company = await getCompanySettings();
+                return {
+                    type: inv.status === 'proforma' ? 'proforma' : 'invoice',
+                    number: inv.invoice_number || '',
+                    date: inv.created_at,
+                    customer: customer || null,
+                    items: items.map(i => ({
+                        description: i.description || '',
+                        quantity: i.quantity || 0,
+                        unit_price: i.unit_price || 0,
+                        total: i.total || 0
+                    })),
+                    totals: { total: inv.total_amount || 0, status: inv.status },
+                    notes: '',
+                    footnotes: '',
+                    company,
+                    po_number: inv.po_number || ''
+                };
+            }
+
+            async function buildDocConfigFromDN(dnRecord) {
+                const company = await getCompanySettings();
+                return {
+                    type: 'dn',
+                    number: dnRecord.invoice_no || '',
+                    date: dnRecord.date,
+                    customer: { contact_person: dnRecord.vendor || '' },
+                    items: [{ description: dnRecord.description || 'Debit Note', quantity: 1, unit_price: dnRecord.amount || 0, total: dnRecord.amount || 0 }],
+                    totals: { total: dnRecord.amount || 0 },
+                    notes: dnRecord.notes || '',
+                    footnotes: '',
+                    company,
+                    po_number: ''
+                };
+            }
+
+            window.previewEstimatePrint = async function(id) {
+                try {
+                    await loadCustomerDropdowns();
+                    const config = await buildDocConfigFromEst(id);
+                    if (!config) { showToast('Estimate not found.', 'error'); return; }
+                    const html = buildPrintDoc(config);
+                    openPrintPreview('Estimate ' + config.number, html);
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.previewInvoicePrint = async function(id) {
+                try {
+                    await loadCustomerDropdowns();
+                    const config = await buildDocConfigFromInv(id);
+                    if (!config) { showToast('Invoice not found.', 'error'); return; }
+                    const html = buildPrintDoc(config);
+                    const label = config.type === 'proforma' ? 'Proforma Invoice' : 'Invoice';
+                    openPrintPreview(label + ' ' + config.number, html);
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.previewDNPrint = async function(id) {
+                try {
+                    const { data: dn, error } = await client.from('expenses').select('*').eq('id', id).single();
+                    if (error || !dn) { showToast('DN not found.', 'error'); return; }
+                    const config = await buildDocConfigFromDN(dn);
+                    const html = buildPrintDoc(config);
+                    openPrintPreview('Debit Note ' + config.number, html);
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            /* ── DEBIT NOTES ── */
+            async function loadDNs() {
+                try {
+                    const { data, error } = await client.from('expenses').select('*').eq('category', 'debit_note').order('created_at', { ascending: false });
+                    if (error) throw error;
+                    const tbody = document.getElementById('dnTable');
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No debit notes yet. Convert an estimate to create one.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.map(dn => `<tr>
+                        <td><strong>${escapeHtml(dn.invoice_no || 'N/A')}</strong></td>
+                        <td>${escapeHtml(dn.vendor || '—')}</td>
+                        <td>${dn.date ? new Date(dn.date).toLocaleDateString() : '—'}</td>
+                        <td>LKR ${parseFloat(dn.amount || 0).toLocaleString()}</td>
+                        <td><span class="badge badge-dn">Debit Note</span></td>
+                        <td>
+                            <div class="doc-actions">
+                                <button class="btn-sm" style="background:var(--primary-green);color:#fff;" onclick="previewDNPrint('${dn.id}')" title="Print Preview"><i class="fas fa-print"></i></button>
+                                <button class="btn-sm red" onclick="deleteDN('${dn.id}')" title="Delete DN"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`).join('');
+                } catch (err) {
+                    console.warn('DNs load failed:', err);
+                    document.getElementById('dnTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load.</td></tr>';
+                }
+            }
+
+            window.deleteDN = async function(id) {
+                if (!confirm('Delete this debit note? This will not affect the original estimate.')) return;
+                try {
+                    await client.from('expenses').delete().eq('id', id);
+                    showToast('Debit note deleted.');
+                    loadDNs();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            /* ── INVOICES ── */
+            async function loadInvoices() {
+                try {
+                    const { data, error } = await client.from('invoices').select('*').order('created_at', { ascending: false });
+                    if (error) throw error;
+                    const tbody = document.getElementById('invoicesTable');
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No invoices yet.</td></tr>';
+                        return;
+                    }
+                    const admin = isAdmin();
+                    tbody.innerHTML = data.map(inv => {
+                        const c = customerMap[inv.customer_id];
+                        const cn = c ? (c.contact_person + (c.company_name ? ' ('+c.company_name+')' : '')) : '—';
+                        const isProforma = inv.status === 'proforma';
+                        return `<tr>
+                            <td><strong>${escapeHtml(inv.invoice_number || 'N/A')}</strong></td>
+                            <td>${escapeHtml(cn)}</td>
+                            <td>${inv.created_at ? new Date(inv.created_at).toLocaleDateString() : '—'}</td>
+                            <td>LKR ${parseFloat(inv.total_amount || 0).toLocaleString()}</td>
+                            <td><span class="badge badge-${isProforma ? 'proforma' : inv.status || 'draft'}">${isProforma ? 'Proforma' : inv.status || 'draft'}</span></td>
+                            <td>
+                                <div class="doc-actions">
+                                    ${admin ? `<button class="btn-sm blue" onclick="editInvoice('${inv.id}')" title="Admin: Edit"><i class="fas fa-edit"></i></button>` : ''}
+                                    <button class="btn-sm" style="background:var(--primary-green);color:#fff;" onclick="previewInvoicePrint('${inv.id}')" title="Print Preview"><i class="fas fa-print"></i></button>
+                                    <button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="markInvoicePaid('${inv.id}')" title="Mark Paid"><i class="fas fa-check"></i></button>
+                                    ${admin ? `<button class="btn-sm red" onclick="deleteInvoice('${inv.id}')" title="Admin: Delete"><i class="fas fa-trash"></i></button>` : ''}
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                } catch (err) {
+                    console.warn('Invoices load failed:', err);
+                    document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load.</td></tr>';
+                }
+            }
+
+            window.showInvoiceForm = async function() {
+                document.getElementById('editInvoiceId').value = '';
+                document.getElementById('invFormTitle').innerText = 'New Invoice';
+                document.getElementById('invStatus').value = 'pending';
+                document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('invDueDate').value = '';
+                document.getElementById('invoiceItems').innerHTML = '';
+                document.getElementById('invoiceDisplay').innerText = 'LKR 0.00';
+                document.getElementById('invoiceTotal').value = '0';
+                await loadCustomerDropdowns();
+                await loadEstimateDropdown();
+                addInvoiceLineItem();
+                openModal('invoiceOverlay');
+            };
+
+            window.addInvoiceLineItem = function() {
+                addLineItem('invoiceItems', '', '', 1, 0);
+                recalcTotals('invoiceItems');
+            };
+
+            window.editInvoice = async function(id) {
+                if (!isAdmin()) { showToast('Only admin can edit invoices.', 'error'); return; }
+                try {
+                    const { data, error } = await client.from('invoices').select().eq('id', id).single();
+                    if (error || !data) return;
+                    await loadCustomerDropdowns();
+                    document.getElementById('editInvoiceId').value = id;
+                    document.getElementById('invFormTitle').innerText = 'Edit Invoice #' + (data.invoice_number || '');
+                    document.getElementById('invClient').value = data.customer_id || '';
+                    document.getElementById('invStatus').value = data.status || 'pending';
+                    document.getElementById('invDate').value = data.created_at ? data.created_at.split('T')[0] : '';
+                    document.getElementById('invoiceItems').innerHTML = '';
+                    if (data.items && Array.isArray(data.items)) {
+                        data.items.forEach(item => {
+                            addLineItem('invoiceItems', item.description || '', item.notes || '', item.quantity || 1, item.unit_price || 0);
+                        });
+                    } else {
+                        addLineItem('invoiceItems', '', '', 1, 0);
+                    }
+                    recalcTotals('invoiceItems');
+                    await loadEstimateDropdown();
+                    openModal('invoiceOverlay');
+                } catch (err) {
+                    showToast('Error loading invoice: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.saveInvoice = async function() {
+                const customerId = document.getElementById('invClient').value;
+                if (!customerId) { showToast('Please select a client.', 'error'); return; }
+                const editId = document.getElementById('editInvoiceId').value;
+                if (editId && !isAdmin()) { showToast('Only admin can modify invoices.', 'error'); return; }
+                const items = getLineItems('invoiceItems');
+                const total = items.reduce((s, i) => s + i.total, 0);
+                if (total <= 0) { showToast('Add at least one item with a positive total.', 'error'); return; }
+                try {
+                    if (editId) {
+                        const { error } = await client.from('invoices').update({ 
+                            customer_id: customerId, 
+                            status: document.getElementById('invStatus').value, 
+                            total_amount: total, 
+                            items 
+                        }).eq('id', editId);
+                        if (error) throw error;
+                        showToast('Invoice updated!');
+                    } else {
+                        const invNum = 'INV-' + Date.now().toString(36).toUpperCase();
+                        const { error } = await client.from('invoices').insert({ 
+                            customer_id: customerId, 
+                            invoice_number: invNum, 
+                            status: document.getElementById('invStatus').value, 
+                            total_amount: total, 
+                            items 
+                        });
+                        if (error) throw error;
+                        showToast('Invoice created!');
+                    }
+                    closeModal('invoiceOverlay');
+                    loadInvoices();
+                } catch (err) {
+                    showToast('Error saving invoice: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.deleteInvoice = async function(id) {
+                if (!isAdmin()) { showToast('Only admins can delete invoices.', 'error'); return; }
+                if (!confirm('Delete this invoice? This action requires admin credentials.')) return;
+                try {
+                    await client.from('invoices').delete().eq('id', id);
+                    showToast('Invoice deleted.');
+                    loadInvoices();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.markInvoicePaid = async function(id) {
+                if (!confirm('Mark this invoice as paid?')) return;
+                try {
+                    await client.from('invoices').update({ status: 'paid' }).eq('id', id);
+                    showToast('Invoice marked as paid!');
+                    loadInvoices();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            // Load all on init
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('tab') === 'invoices') switchTab('estInv', 'invoices');
+            
+            checkUser().then(() => {
+                loadCustomerDropdowns().then(() => { 
+                    loadEstimates(); 
+                    loadInvoices(); 
+                    loadDNs();
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

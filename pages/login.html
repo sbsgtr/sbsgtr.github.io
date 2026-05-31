@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Login — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/public.css">
+    <style>
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 100px 20px 40px; background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(46,125,50,0.15) 0%, transparent 70%), linear-gradient(160deg, #071a09 0%, #0c2e10 50%, #071a09 100%); }
+        .login-card { width: 100%; max-width: 400px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 40px; backdrop-filter: blur(20px); }
+        .login-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 2px; color: var(--white); text-align: center; margin-bottom: 8px; }
+        .login-card h2 span { color: var(--lime); }
+        .login-sub { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+        .login-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--white); font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
+        .login-input:focus { border-color: var(--lime); }
+        .login-input::placeholder { color: rgba(255,255,255,0.25); }
+        .login-btn { width: 100%; padding: 13px; background: var(--lime); color: var(--green-deep); font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s, transform 0.15s; margin-top: 6px; }
+        .login-btn:hover { background: #c8f746; transform: translateY(-2px); }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .login-divider { text-align: center; color: rgba(255,255,255,0.2); font-size: 12px; margin: 20px 0; position: relative; }
+        .login-divider::before, .login-divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: rgba(255,255,255,0.1); }
+        .login-divider::before { left: 0; } .login-divider::after { right: 0; }
+        .social-login { display: flex; gap: 10px; }
+        .social-login-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--muted); font-size: 14px; text-align: center; cursor: pointer; transition: background 0.2s, color 0.2s; text-decoration: none; }
+        .social-login-btn:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+        .login-error { color: #ff5252; font-size: 13px; text-align: center; margin-top: 10px; display: none; }
+        .login-back { text-align: center; margin-top: 20px; }
+        .login-back a { color: var(--muted); font-size: 13px; text-decoration: none; transition: color 0.2s; }
+        .login-back a:hover { color: var(--lime); }
+        .login-loading { text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px; display: none; }
+        .login-loading i { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="login-page">
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <header id="mainHeader">
+        <a href="index.html" class="logo-wrap">
+            <img src="../logo.png" class="site-logo" alt="NEXWAVE Logo">
+            <span class="logo-text">NEX<span>WAVE</span></span>
+        </a>
+        <div class="menu-btn" id="menuToggle" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+    </header>
+
+    <!-- SIDE MENU -->
+    <div class="side-menu" id="sideMenu">
+        <a href="index.html"><i class="fas fa-house"></i> Home</a>
+        <a href="who-we-are.html"><i class="fas fa-users"></i> Who We Are</a>
+        <a href="what-we-do.html"><i class="fas fa-cogs"></i> What We Do</a>
+        <a href="our_values.html"><i class="fas fa-heart"></i> Values</a>
+        <a href="index.html#contact"><i class="fas fa-envelope"></i> Contact</a>
+        <a href="login.html" id="loginBtn" style="display:none;"><i class="fas fa-lock"></i> Login</a>
+        <div id="userEmail"></div>
+        <div id="publicSignInSep" style="border-top:1px solid rgba(255,255,255,0.08);margin:8px 30px;padding-top:8px;"></div>
+        <a id="publicGoogleBtn" href="#" onclick="signInWithPublicGoogle(); return false;"><i class="fab fa-google"></i> Sign in with Google</a>
+        <a id="publicGithubBtn" href="#" onclick="signInWithPublicGithub(); return false;"><i class="fab fa-github"></i> Sign in with GitHub</a>
+        <a id="newsletterLink" href="#" onclick="alert('Subscribe to our newsletter for updates!'); return false;" style="display:none;"><i class="fas fa-envelope"></i> Subscribe to Newsletter</a>
+        <div id="userAvatar" style="display:none;align-items:center;gap:10px;padding:12px 30px;border-top:1px solid rgba(255,255,255,0.05);margin-top:8px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;color:var(--green-deep);font-weight:600;font-size:13px;flex-shrink:0;" id="userInitials"></div>
+            <div style="flex:1;">
+                <div style="font-size:13px;color:var(--white);font-weight:500;" id="userName"></div>
+                <div style="font-size:11px;color:var(--muted);" id="userEmailSub"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+        <h2>NEX<span>WAVE</span></h2>
+        <p class="login-sub">Sign in to your ERP dashboard</p>
+        <form id="loginForm">
+            <input type="email" class="login-input" id="emailInput" placeholder="Email address" required autocomplete="email">
+            <input type="password" class="login-input" id="passwordInput" placeholder="Password" required autocomplete="current-password">
+            <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-arrow-right"></i> Sign In</button>
+            <div class="login-error" id="loginError">Invalid email or password.</div>
+            <div class="login-loading" id="loginLoading"><i class="fas fa-spinner"></i> Signing in...</div>
+        </form>
+        <div id="socialLogin">
+            <div class="login-divider">or sign in with</div>
+            <div class="social-login">
+                <button class="social-login-btn" onclick="signInWithPublicGoogle()"><i class="fab fa-google"></i> Google <span style="font-size:10px;opacity:0.5;">(NEXi)</span></button>
+                <button class="social-login-btn" onclick="signInWithPublicGithub()"><i class="fab fa-github"></i> GitHub <span style="font-size:10px;opacity:0.5;">(NEXi)</span></button>
+            </div>
+            <p style="font-size:11px;color:rgba(255,255,255,0.2);text-align:center;margin-top:8px;">Sign in for NEXi chat &amp; newsletter — <a href="#" onclick="showAdminLoginInfo(); return false;" style="color:var(--lime);text-decoration:none;">ERP admin?</a></p>
+        </div>
+        <div class="login-back"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a></div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/public.js"></script>
+    <script>
+        (function initLoginPage() {
+            // Wait for public.js to initialize nexwaveClient
+            const checkClient = setInterval(function() {
+                if (window.nexwaveClient) {
+                    clearInterval(checkClient);
+                    setupLogin(window.nexwaveClient);
+                }
+            }, 50);
+
+            // Stop polling after 5 seconds to avoid hanging
+            setTimeout(function() {
+                clearInterval(checkClient);
+            }, 5000);
+
+            function setupLogin(client) {
+                const form = document.getElementById('loginForm');
+                const errorEl = document.getElementById('loginError');
+                const loadingEl = document.getElementById('loginLoading');
+                const btn = document.getElementById('loginBtn');
+
+                // Check maintenance mode — disable new registration if active
+                client.from('app_settings').select('maintenance_mode').limit(1).maybeSingle().then(({ data: settings }) => {
+                    if (settings?.maintenance_mode === true) {
+                        const socialSection = document.getElementById('socialLogin');
+                        if (socialSection) {
+                            socialSection.style.display = 'none';
+                        }
+                    }
+                });
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    errorEl.style.display = 'none';
+                    loadingEl.style.display = 'block';
+                    btn.disabled = true;
+
+                    const email = document.getElementById('emailInput').value;
+                    const password = document.getElementById('passwordInput').value;
+
+                    const { error } = await client.auth.signInWithPassword({ email, password });
+
+                    loadingEl.style.display = 'none';
+                    btn.disabled = false;
+
+                    if (error) {
+                        errorEl.innerText = error.message || 'Invalid email or password.';
+                        errorEl.style.display = 'block';
+                    } else {
+                        window.location.href = '../erp/corporate.html';
+                    }
+                });
+
+                // Public sign-in functions are now in public.js (signInWithPublicGoogle / signInWithPublicGithub)
+            }
+
+            // Show admin login info when user clicks the link
+            window.showAdminLoginInfo = function() {
+                const socialSection = document.getElementById('socialLogin');
+                const loginSub = document.querySelector('.login-sub');
+                if (socialSection) socialSection.style.display = 'none';
+                if (loginSub) loginSub.innerText = 'Sign in with your admin credentials';
+                // Only add restore link once
+                const backLink = document.querySelector('.login-back');
+                if (backLink && !document.querySelector('.restore-link')) {
+                    const restoreLink = document.createElement('p');
+                    restoreLink.className = 'restore-link';
+                    restoreLink.style.cssText = 'margin-top:10px;font-size:11px;color:rgba(255,255,255,0.2);text-align:center;';
+                    restoreLink.innerHTML = '<a href="#" onclick="location.reload(); return false;" style="color:var(--lime);text-decoration:none;">Show NEXi sign-in options</a>';
+                    backLink.appendChild(restoreLink);
+                }
+            };
+
+            // Fallback in case client is already available
+            if (window.nexwaveClient) {
+                setupLogin(window.nexwaveClient);
+            }
+        })();
+    </script>
+</body>
+</html>

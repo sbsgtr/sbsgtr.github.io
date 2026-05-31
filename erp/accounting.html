@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Accounting — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link active"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Accounting</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-calculator" style="color:var(--primary-green);"></i> Accounting</h1>
+
+            <div class="kpi-grid" id="accountingKpi">
+                <div class="kpi"><div class="kpi-icon green"><i class="fas fa-arrow-up"></i></div><div class="kpi-label">Total Income</div><div class="kpi-val" id="totalIncome">LKR 0</div><div class="kpi-sub">All time</div></div>
+                <div class="kpi"><div class="kpi-icon red"><i class="fas fa-arrow-down"></i></div><div class="kpi-label">Total Expenses</div><div class="kpi-val" id="totalExpenses">LKR 0</div><div class="kpi-sub">All time</div></div>
+                <div class="kpi"><div class="kpi-icon blue"><i class="fas fa-balance-scale"></i></div><div class="kpi-label">Net Profit</div><div class="kpi-val" id="netProfit">LKR 0</div><div class="kpi-sub">Before tax</div></div>
+                <div class="kpi"><div class="kpi-icon amber"><i class="fas fa-file-invoice-dollar"></i></div><div class="kpi-label">Outstanding</div><div class="kpi-val" id="outstanding">LKR 0</div><div class="kpi-sub">Unpaid invoices</div></div>
+            </div>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="acct" data-tab="pnl" onclick="switchTab('acct', 'pnl')"><i class="fas fa-chart-line"></i> P&amp;L</button>
+                <button class="tab-btn" data-group="acct" data-tab="transactions" onclick="switchTab('acct', 'transactions')"><i class="fas fa-list"></i> Transactions</button>
+                <button class="tab-btn" data-group="acct" data-tab="budget" onclick="switchTab('acct', 'budget')"><i class="fas fa-piggy-bank"></i> Budget</button>
+            </div>
+
+            <!-- P&L Tab -->
+            <div class="tab-section active" data-group="acct" data-tab="pnl">
+                <div class="card"><h3>Profit &amp; Loss Summary</h3><div id="pnlContent"><p style="color:var(--text-muted);">Loading P&amp;L data...</p></div></div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div class="tab-section" data-group="acct" data-tab="transactions">
+                <button onclick="showTransactionForm()" style="margin-bottom:20px;"><i class="fas fa-plus"></i> Add Transaction</button>
+                <div class="card" style="overflow-x:auto;">
+                    <table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount</th><th>Actions</th></tr></thead><tbody id="transactionsTable"><tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+                </div>
+            </div>
+
+            <!-- Budget Tab -->
+            <div class="tab-section" data-group="acct" data-tab="budget">
+                <div class="card"><h3>Budget vs Actual</h3><div id="budgetContent"><p style="color:var(--text-muted);">Loading budget data...</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Modal (REAL FORM) -->
+    <div class="overlay" id="transactionOverlay"><div class="modal" style="width:520px;"><div class="modal-header"><h3><i class="fas fa-exchange-alt" style="color:var(--primary-green);"></i> <span id="txFormTitle">Add Transaction</span></h3><button class="icon-close" onclick="closeModal('transactionOverlay')">&times;</button></div><div class="modal-body">
+        <input type="hidden" id="editTxId">
+        <input type="hidden" id="editTxSource">
+        <label>Type</label>
+        <div style="display:flex;gap:12px;margin-bottom:10px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;cursor:pointer;font-weight:400;margin:0;">
+                <input type="radio" name="txType" value="income" checked onchange="toggleTxType()"> <span style="color:var(--primary-green);font-weight:600;">Income</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;cursor:pointer;font-weight:400;margin:0;">
+                <input type="radio" name="txType" value="expense" onchange="toggleTxType()"> <span style="color:var(--red);font-weight:600;">Expense</span>
+            </label>
+        </div>
+        <div class="form-row">
+            <div><label>Date</label><input type="date" id="txDate"></div>
+            <div><label>Amount (LKR) *</label><input type="number" id="txAmount" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+        <label>Category</label>
+        <select id="txCategory" style="width:100%;">
+            <optgroup label="Income">
+                <option value="Sales">Sales / Services</option>
+                <option value="Consulting">Consulting Fees</option>
+                <option value="Maintenance">Maintenance Contracts</option>
+                <option value="Misc Income">Other Income</option>
+            </optgroup>
+            <optgroup label="Expense">
+                <option value="Materials">Materials &amp; Supplies</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Transport">Transport / Logistics</option>
+                <option value="Labor">Labor / Subcontractors</option>
+                <option value="Utilities">Utilities / Rent</option>
+                <option value="Marketing">Marketing &amp; Ads</option>
+                <option value="Admin">Admin &amp; Office</option>
+                <option value="Misc Expense">Other Expense</option>
+            </optgroup>
+        </select>
+        <label>Description</label>
+        <input type="text" id="txDesc" placeholder="Brief description of transaction">
+        <label>Reference</label>
+        <input type="text" id="txRef" placeholder="Invoice / Bill # (optional)">
+    </div><div class="modal-footer">
+        <button onclick="closeModal('transactionOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveTransaction()"><i class="fas fa-save"></i> Save Transaction</button>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <script>
+        (function initAccounting() {
+            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+            const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+            window.toggleTxType = function() {
+                const isExpense = document.querySelector('input[name="txType"]:checked').value === 'expense';
+                const cat = document.getElementById('txCategory');
+                if (isExpense) {
+                    if (!cat.value || ['Sales','Consulting','Maintenance','Misc Income'].includes(cat.value)) cat.value = 'Materials';
+                } else {
+                    if (cat.value === '' || ['Materials','Equipment','Transport','Labor','Utilities','Marketing','Admin','Misc Expense'].includes(cat.value)) cat.value = 'Sales';
+                }
+            };
+
+            window.showTransactionForm = function() {
+                document.getElementById('editTxId').value = '';
+                document.getElementById('editTxSource').value = '';
+                document.getElementById('txFormTitle').innerText = 'Add Transaction';
+                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('txAmount').value = '';
+                document.getElementById('txDesc').value = '';
+                document.getElementById('txRef').value = '';
+                document.querySelector('input[name="txType"][value="income"]').checked = true;
+                document.getElementById('txCategory').value = 'Sales';
+                openModal('transactionOverlay');
+            };
+
+            window.saveTransaction = async function() {
+                const amount = parseFloat(document.getElementById('txAmount').value);
+                if (!amount || amount <= 0) { showToast('Enter a valid amount.', 'error'); return; }
+                const editId = document.getElementById('editTxId').value;
+                const sourceTable = document.getElementById('editTxSource').value;
+                const type = document.querySelector('input[name="txType"]:checked').value;
+                const category = document.getElementById('txCategory').value;
+                const desc = document.getElementById('txDesc').value.trim() || (type === 'income' ? 'Income' : 'Expense');
+                const refVal = document.getElementById('txRef').value.trim();
+                const dateVal = document.getElementById('txDate').value || new Date().toISOString().split('T')[0];
+                
+                try {
+                    if (type === 'expense') {
+                        const payload = { date: dateVal, amount, description: desc, category, notes: refVal, vendor: '' };
+                        if (editId && sourceTable === 'expenses') {
+                            await client.from('expenses').update(payload).eq('id', editId);
+                            showToast('Expense updated!');
+                        } else {
+                            await client.from('expenses').insert(payload);
+                            showToast('Expense saved!');
+                        }
+                    } else {
+                        const payload = { date: dateVal, amount, description: desc, category, source: category, reference_no: refVal, notes: '' };
+                        if (editId && sourceTable === 'income_records') {
+                            await client.from('income_records').update(payload).eq('id', editId);
+                            showToast('Income updated!');
+                        } else {
+                            await client.from('income_records').insert(payload);
+                            showToast('Income saved!');
+                        }
+                    }
+                    closeModal('transactionOverlay');
+                    loadAccounting();
+                } catch (err) {
+                    showToast('Error saving: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.editTransaction = async function(id, sourceTable) {
+                try {
+                    const { data, error } = await client.from(sourceTable).select().eq('id', id).single();
+                    if (error || !data) return;
+                    document.getElementById('editTxId').value = id;
+                    document.getElementById('editTxSource').value = sourceTable;
+                    document.getElementById('txFormTitle').innerText = 'Edit ' + (sourceTable === 'expenses' ? 'Expense' : 'Income');
+                    document.getElementById('txDate').value = data.date ? data.date.split('T')[0] : new Date().toISOString().split('T')[0];
+                    document.getElementById('txAmount').value = data.amount || '';
+                    document.getElementById('txDesc').value = data.description || '';
+                    const ref = sourceTable === 'expenses' ? (data.notes || data.invoice_no || '') : (data.reference_no || '');
+                    document.getElementById('txRef').value = ref;
+                    document.querySelector(`input[name="txType"][value="${sourceTable === 'expenses' ? 'expense' : 'income'}"]`).checked = true;
+                    document.getElementById('txCategory').value = data.category || (sourceTable === 'expenses' ? 'Materials' : 'Sales');
+                    openModal('transactionOverlay');
+                } catch (err) {
+                    showToast('Error loading: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.deleteTransaction = async function(id, sourceTable) {
+                if (!confirm('Delete this transaction?')) return;
+                try {
+                    await client.from(sourceTable).delete().eq('id', id);
+                    showToast('Transaction deleted.');
+                    loadAccounting();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            async function loadAccounting() {
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) return;
+                    const { data: invoices } = await client.from('invoices').select('*');
+                    const { data: expenseData } = await client.from('expenses').select('*').order('date', { ascending: false });
+                    const { data: incomeData } = await client.from('income_records').select('*').order('date', { ascending: false });
+
+                    const paidInv = (invoices || []).filter(i => i.status === 'paid').reduce((s, i) => s + parseFloat(i.total_amount || 0), 0);
+                    const txIncome = (incomeData || []).reduce((s, i) => s + parseFloat(i.amount || 0), 0);
+                    const expenses = (expenseData || []).reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+                    const outstanding = (invoices || []).filter(i => i.status !== 'paid' && i.status !== 'cancelled').reduce((s, i) => s + parseFloat(i.total_amount || 0), 0);
+                    const totalIncome = paidInv + txIncome;
+
+                    document.getElementById('totalIncome').innerText = 'LKR ' + totalIncome.toLocaleString();
+                    document.getElementById('totalExpenses').innerText = 'LKR ' + expenses.toLocaleString();
+                    const profit = totalIncome - expenses;
+                    document.getElementById('netProfit').innerText = 'LKR ' + profit.toLocaleString();
+                    document.getElementById('netProfit').style.color = profit >= 0 ? '' : 'var(--red)';
+                    document.getElementById('outstanding').innerText = 'LKR ' + outstanding.toLocaleString();
+
+                    document.getElementById('pnlContent').innerHTML = `
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                            <div><p style="color:var(--text-muted);font-size:13px;">Total Revenue</p><p style="font-size:28px;font-weight:700;color:var(--dark-green);">LKR ${totalIncome.toLocaleString()}</p></div>
+                            <div><p style="color:var(--text-muted);font-size:13px;">Total Expenses</p><p style="font-size:28px;font-weight:700;color:var(--red);">LKR ${expenses.toLocaleString()}</p></div>
+                            <div style="grid-column:1/-1;border-top:2px solid #eee;padding-top:16px;"><p style="color:var(--text-muted);font-size:13px;">Net Profit</p><p style="font-size:32px;font-weight:800;color:${profit >= 0 ? 'var(--dark-green)' : 'var(--red)'};">LKR ${profit.toLocaleString()}</p></div>
+                            <div><p style="color:var(--text-muted);font-size:13px;">Outstanding Invoices</p><p style="font-size:20px;font-weight:600;color:var(--amber);">LKR ${outstanding.toLocaleString()}</p></div>
+                            <div><p style="color:var(--text-muted);font-size:13px;">Expense Ratio</p><p style="font-size:20px;font-weight:600;">${totalIncome > 0 ? Math.round((expenses / totalIncome) * 100) : 0}%</p></div>
+                        </div>
+                    `;
+
+                    const transactions = [
+                        ...(expenseData || []).map(e => ({ ...e, _source: 'expenses', type: 'expense' })),
+                        ...(incomeData || []).map(i => ({ ...i, _source: 'income_records', type: 'income', reference: i.reference_no || '' }))
+                    ];
+                    transactions.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+                    const tbody = document.getElementById('transactionsTable');
+                    if (transactions.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No transactions yet.</td></tr>';
+                    } else {
+                        tbody.innerHTML = transactions.map(t => {
+                        const isUnsafe = t.category === 'debit_note';
+                        return `<tr${isUnsafe ? ' style="border-left:3px solid #e65100;"' : ''}>
+                            <td>${t.date ? new Date(t.date).toLocaleDateString() : '—'}</td>
+                            <td>${escapeHtml(t.description || '—')}${isUnsafe ? ' <span style="background:#fff3e0;color:#e65100;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;">⚠ UNSAFE</span>' : ''}${t.notes ? '<br><span style="font-size:11px;color:#888;">Ref: '+escapeHtml(t.notes)+'</span>' : (t.reference_no ? '<br><span style="font-size:11px;color:#888;">Ref: '+escapeHtml(t.reference_no)+'</span>' : '')}</td>
+                            <td><span class="cat-tag">${escapeHtml(t.category || 'General')}</span></td>
+                            <td><span class="badge badge-${t.type}">${t.type}</span></td>
+                            <td style="font-weight:600;color:${t.type === 'income' ? 'var(--primary-green)' : 'var(--red)'};">${t.type === 'income' ? '+' : '-'} LKR ${parseFloat(t.amount || 0).toLocaleString()}</td>
+                            <td>
+                                <button class="btn-sm blue" onclick="editTransaction('${t.id}','${t._source}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-sm red" onclick="deleteTransaction('${t.id}','${t._source}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                    }
+
+                    const expenseRatio = totalIncome > 0 ? Math.min(100, (expenses / totalIncome) * 100) : 0;
+                    document.getElementById('budgetContent').innerHTML = `
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+                            <div><p style="color:var(--text-muted);font-size:13px;">Budget Utilization</p><p style="font-size:24px;font-weight:700;">${Math.round(expenseRatio)}%</p><div class="progress-bar"><div class="progress-fill" style="width:${expenseRatio}%;background:${expenseRatio > 80 ? 'var(--red)' : expenseRatio > 50 ? 'var(--amber)' : 'var(--primary-green)'};"></div></div></div>
+                            <div><p style="color:var(--text-muted);font-size:13px;">Revenue vs Expenses</p><p style="font-size:20px;font-weight:700;color:var(--dark-green);">LKR ${totalIncome.toLocaleString()}</p><p style="font-size:16px;font-weight:600;color:var(--red);">− LKR ${expenses.toLocaleString()}</p></div>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.warn('Accounting load failed:', err);
+                }
+            }
+
+            loadAccounting();
+        })();
+    </script>
+</body>
+</html>

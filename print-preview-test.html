@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Preview Test — NEXWAVE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="shared/css/erp.css" />
+    <style>
+        body { margin: 0; padding: 0; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .test-header { width: 100%; max-width: 800px; padding: 20px; text-align: center; }
+        .test-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; margin: 0 0 4px; }
+        .test-header h1 span:first-child { color: #071a09; }
+        .test-header h1 span:last-child { color: #b5f542; }
+        .test-header p { font-family: 'Outfit', sans-serif; font-size: 13px; color: #888; margin: 0 0 16px; }
+        .test-controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .test-controls button { padding: 8px 20px; border: none; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.15s, opacity 0.15s; }
+        .test-controls button:hover { transform: translateY(-2px); }
+        .test-controls button:active { transform: translateY(0); }
+        .btn-est { background: #e3f2fd; color: #1565c0; }
+        .btn-inv { background: #fff3e0; color: #e65100; }
+        .btn-pf { background: #e8f5e9; color: #2e7d32; }
+        .btn-dn { background: #fce4ec; color: #c62828; }
+        .btn-print { background: #071a09; color: #b5f542; }
+        .print-preview-body { width: 100%; display: flex; justify-content: center; padding: 40px 20px; }
+        .print-preview-body .print-document { margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1><span>NEX</span><span>WAVE</span></h1>
+        <p>Print Document Layout Test — Select a document type to preview</p>
+        <div class="test-controls">
+            <button class="btn-est" onclick="renderPreview('estimate')">📄 Estimate</button>
+            <button class="btn-inv" onclick="renderPreview('invoice')">🧾 Invoice</button>
+            <button class="btn-pf" onclick="renderPreview('proforma')">📋 Proforma</button>
+            <button class="btn-dn" onclick="renderPreview('dn')">📝 Delivery Note</button>
+            <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+        </div>
+    </div>
+    <div class="print-preview-body" id="previewBody"></div>
+
+    <script src="shared/js/erp.js"></script>
+    <script>
+        // Disable auth redirect for testing
+        const origCheckAuth = window.checkAuth;
+        window.checkAuth = function() {};
+
+        const sampleCompany = {
+            company_name: 'NEXWAVE Solutions (Pvt) Ltd',
+            address: '209/32, Kudamaduwa, Siddamulla, Piliyandala.',
+            phone: '+94 11 223 3444',
+            email: 'info@nexwavex.com',
+            website: 'www.nexwavex.com',
+            company_info: 'Payment Terms: Net 30',
+            general_note: 'Thank you for your business! Please make payment within 30 days.'
+        };
+
+        const sampleCustomer = {
+            contact_person: 'John Doe',
+            company_name: 'TechSolve Lanka (Pvt) Ltd',
+            address: '42, Galle Road',
+            city: 'Colombo 03',
+            email: 'john@techsolve.lk',
+            contact_number: '+94 77 123 4567'
+        };
+
+        const sampleItems = [
+            { description: 'Web Development - Corporate Portal', quantity: 1, unit_price: 150000, total: 150000 },
+            { description: 'UI/UX Design - Dashboard Interface', quantity: 2, unit_price: 75000, total: 150000 },
+            { description: 'API Integration Services', quantity: 5, unit_price: 25000, total: 125000 },
+            { description: 'Cloud Hosting Setup & Configuration', quantity: 1, unit_price: 45000, total: 45000 },
+            { description: 'Security Audit & Penetration Testing', quantity: 3, unit_price: 35000, total: 105000 }
+        ];
+
+        const totalAmount = sampleItems.reduce((s, i) => s + i.total, 0);
+
+        function renderPreview(type) {
+            const config = {
+                type: type,
+                number: type === 'estimate' ? 'EST-24A3F7B2C1'
+                    : type === 'dn' ? 'DN-24B8E9F0D2'
+                    : type === 'proforma' ? 'PF-24C5D6E7F8'
+                    : 'INV-24D1E2F3G4',
+                date: '2026-05-31',
+                customer: type === 'dn' ? { contact_person: 'Jane Smith', company_name: 'GlobalTrade Services' } : sampleCustomer,
+                items: sampleItems,
+                totals: { total: totalAmount, status: type === 'invoice' ? 'pending' : type === 'proforma' ? 'proforma' : 'Estimate' },
+                notes: type === 'dn' ? 'Debit note for service charges as per agreement dated 15 May 2026.' : '',
+                footnotes: type === 'invoice' ? 'Payment Terms: Net 30 | PO: PO-2026-0042' : 'Payment Terms: Net 30',
+                company: sampleCompany,
+                po_number: type === 'invoice' ? 'PO-2026-0042' : ''
+            };
+            const html = buildPrintDoc(config);
+            document.getElementById('previewBody').innerHTML = html;
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render invoice by default
+        renderPreview('invoice');
+    </script>
+</body>
+</html>

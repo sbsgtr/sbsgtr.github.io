@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Products — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-bar input { flex: 1; min-width: 200px; padding: 10px 16px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
+        .search-bar select { padding: 10px 16px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
+        .product-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 700px) { .product-meta { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link active"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Products</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-boxes" style="color:var(--primary-green);"></i> Products &amp; Services</h1>
+
+            <div class="search-bar">
+                <input type="text" id="productSearch" placeholder="Search products..." oninput="filterProducts()">
+                <select id="categoryFilter" onchange="filterProducts()">
+                    <option value="">All Categories</option>
+                    <option value="automation">Automation &amp; Control</option>
+                    <option value="cnc">CNC Solutions</option>
+                    <option value="electronics">PCB &amp; Electronics</option>
+                    <option value="infrastructure">Structural &amp; Infrastructure</option>
+                    <option value="acoustics">Professional Acoustics</option>
+                    <option value="smart_systems">Smart Systems</option>
+                    <option value="consultancy">Technical Consultancy</option>
+                    <option value="hospitality">Hospitality</option>
+                    <option value="other">Other</option>
+                </select>
+                <button onclick="showProductForm()"><i class="fas fa-plus"></i> New Product</button>
+            </div>
+
+            <div class="card" style="overflow-x:auto;">
+                <table><thead><tr>
+                    <th>Name</th><th>Category</th><th>Unit</th><th>Price</th><th>SKU</th><th>Actions</th>
+                </tr></thead><tbody id="productsTable"><tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="overlay" id="productOverlay"><div class="modal" style="width:580px;"><div class="modal-header"><h3><i class="fas fa-boxes" style="color:var(--primary-green);"></i> <span id="productFormTitle">New Product</span></h3><button class="icon-close" onclick="closeModal('productOverlay')">&times;</button></div><div class="modal-body">
+        <input type="hidden" id="editProductId">
+        <label>Product Name *</label>
+        <input type="text" id="pName" placeholder="e.g. Siemens S7-1200 PLC">
+        <div class="product-meta">
+            <div><label>Category</label><select id="pCategory"><option value="automation">Automation &amp; Control</option><option value="cnc">CNC Solutions</option><option value="electronics">PCB &amp; Electronics</option><option value="infrastructure">Structural &amp; Infrastructure</option><option value="acoustics">Professional Acoustics</option><option value="smart_systems">Smart Systems</option><option value="consultancy">Technical Consultancy</option><option value="hospitality">Hospitality</option><option value="other">Other</option></select></div>
+            <div><label>Unit</label><select id="pUnit"><option value="pcs">Per Piece (pcs)</option><option value="meter">Per Meter (m)</option><option value="hour">Per Hour (hr)</option><option value="day">Per Day</option><option value="lot">Per Lot</option><option value="service">Service</option></select></div>
+        </div>
+        <div class="product-meta">
+            <div><label>Unit Price (LKR)</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" min="0"></div>
+            <div><label>SKU / Code</label><input type="text" id="pSku" placeholder="e.g. S7-1200"></div>
+        </div>
+        <label>Description</label>
+        <textarea id="pDesc" rows="3" placeholder="Product description..." style="resize:vertical;"></textarea>
+    </div><div class="modal-footer">
+        <button onclick="closeModal('productOverlay')" class="btn-close">Cancel</button>
+        <button class="btn-green" onclick="saveProduct()"><i class="fas fa-save"></i> Save Product</button>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <script>
+        (function initProducts() {
+            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+            const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+            let productsCache = [];
+
+            async function loadProducts() {
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) return;
+                    const { data, error } = await client.from('products').select('*').order('name');
+                    if (error) throw error;
+                    productsCache = data || [];
+                } catch (err) {
+                    console.warn('Products load failed:', err);
+                    productsCache = [];
+                    document.getElementById('productsTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load products. Please run the database migration first.</td></tr>';
+                }
+                renderProducts();
+            }
+
+            function renderProducts() {
+                const tbody = document.getElementById('productsTable');
+                const search = (document.getElementById('productSearch').value || '').toLowerCase();
+                const catFilter = document.getElementById('categoryFilter').value;
+
+                let filtered = productsCache;
+                if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search));
+                if (catFilter) filtered = filtered.filter(p => p.category === catFilter);
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No products found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = filtered.map(p => `<tr>
+                    <td><strong>${escapeHtml(p.name)}</strong>${p.description ? '<br><span style="font-size:11px;color:#888;">'+escapeHtml(p.description.substring(0,60))+'</span>' : ''}</td>
+                    <td><span class="cat-tag">${(p.category || 'other').replace(/_/g,' ')}</span></td>
+                    <td>${p.unit || 'pcs'}</td>
+                    <td style="font-weight:600;">LKR ${parseFloat(p.unit_price || 0).toLocaleString()}</td>
+                    <td><span style="font-family:monospace;font-size:12px;">${escapeHtml(p.sku || '—')}</span></td>
+                    <td><button class="btn-sm blue" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button> <button class="btn-sm red" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('');
+            }
+
+            window.filterProducts = function() { renderProducts(); };
+
+            window.showProductForm = function() {
+                document.getElementById('editProductId').value = '';
+                document.getElementById('productFormTitle').innerText = 'New Product';
+                document.getElementById('pName').value = '';
+                document.getElementById('pDesc').value = '';
+                document.getElementById('pCategory').value = 'automation';
+                document.getElementById('pUnit').value = 'pcs';
+                document.getElementById('pPrice').value = '';
+                document.getElementById('pSku').value = '';
+                openModal('productOverlay');
+            };
+
+            window.editProduct = async function(id) {
+                try {
+                    const { data, error } = await client.from('products').select().eq('id', id).single();
+                    if (error) throw error;
+                    if (!data) { showToast('Product not found.', 'error'); return; }
+                    document.getElementById('editProductId').value = id;
+                    document.getElementById('productFormTitle').innerText = 'Edit Product';
+                    document.getElementById('pName').value = data.name || '';
+                    document.getElementById('pDesc').value = data.description || '';
+                    document.getElementById('pCategory').value = data.category || 'other';
+                    document.getElementById('pUnit').value = data.unit || 'pcs';
+                    document.getElementById('pPrice').value = data.unit_price || '';
+                    document.getElementById('pSku').value = data.sku || '';
+                    openModal('productOverlay');
+                } catch (err) {
+                    showToast('Error loading product: ' + (err.message || err), 'error');
+                    console.error('editProduct error:', err);
+                }
+            };
+
+            window.saveProduct = async function() {
+                const name = document.getElementById('pName').value.trim();
+                if (!name) { showToast('Product name is required.', 'error'); return; }
+                const editId = document.getElementById('editProductId').value;
+                const payload = {
+                    name,
+                    description: document.getElementById('pDesc').value.trim(),
+                    category: document.getElementById('pCategory').value,
+                    unit: document.getElementById('pUnit').value,
+                    unit_price: parseFloat(document.getElementById('pPrice').value) || 0,
+                    sku: document.getElementById('pSku').value.trim()
+                };
+                try {
+                    if (editId) {
+                        const { error } = await client.from('products').update(payload).eq('id', editId);
+                        if (error) throw error;
+                        showToast('Product updated!');
+                    } else {
+                        const { error } = await client.from('products').insert(payload);
+                        if (error) throw error;
+                        showToast('Product created!');
+                    }
+                    closeModal('productOverlay');
+                    loadProducts();
+                } catch (err) {
+                    showToast('Error saving product: ' + (err.message || err), 'error');
+                    console.error('saveProduct error:', err);
+                }
+            };
+
+            window.deleteProduct = async function(id) {
+                if (!confirm('Delete this product?')) return;
+                try {
+                    const { error } = await client.from('products').delete().eq('id', id);
+                    if (error) throw error;
+                    showToast('Product deleted.');
+                    loadProducts();
+                } catch (err) {
+                    showToast('Error deleting product: ' + (err.message || err), 'error');
+                    console.error('deleteProduct error:', err);
+                }
+            };
+
+            loadProducts();
+        })();
+    </script>
+</body>
+</html>

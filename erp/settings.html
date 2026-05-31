@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Settings — NEXWAVE ERP</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/css/erp.css">
+    <style>
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr; } }
+        .setting-field { margin-bottom: 14px; }
+        .setting-field label { font-size: 11px; font-weight: 600; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .setting-field input, .setting-field select { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <a href="corporate.html" class="sidebar-logo">
+            <img src="../logo.png" alt="NEXWAVE" class="sidebar-logo-img">
+            <div><h2>NEXWAVE</h2><span>CORE</span></div>
+        </a>
+        <div class="user-info"><i class="fas fa-user-circle"></i>&nbsp; <span id="userEmail">Loading...</span></div>
+        <div class="nav-group">
+            <a href="corporate.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="products.html" class="nav-link"><i class="fas fa-boxes"></i> Products</a>
+            <a href="customers.html" class="nav-link"><i class="fas fa-users"></i> Customers</a>
+            <a href="est_inv.html" class="nav-link"><i class="fas fa-file-invoice"></i> Estimates &amp; Invoices</a>
+            <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
+            <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
+            <a href="settings.html" class="nav-link active"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
+        </div>
+        <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
+    </aside>
+
+    <div class="mobile-header">
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+        <h2>Settings</h2>
+        <div></div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main-content">
+            <h1><i class="fas fa-cog" style="color:var(--primary-green);"></i> Settings</h1>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="settings" data-tab="profile" onclick="switchTab('settings', 'profile')"><i class="fas fa-user"></i> Profile</button>
+                <button class="tab-btn" data-group="settings" data-tab="company" onclick="switchTab('settings', 'company')"><i class="fas fa-building"></i> Company</button>
+                <button class="tab-btn" data-group="settings" data-tab="preferences" onclick="switchTab('settings', 'preferences')"><i class="fas fa-sliders-h"></i> Preferences</button>
+                <button class="tab-btn" data-group="settings" data-tab="users" id="usersTabBtn" style="display:none;" onclick="switchTab('settings', 'users'); window.loadUserList()"><i class="fas fa-users-gear"></i> Users</button>
+            </div>
+
+            <!-- PROFILE TAB -->
+            <div class="tab-section active" data-group="settings" data-tab="profile">
+                <div class="card"><h3>Profile Settings</h3>
+                    <div id="profileForm"><div class="settings-grid">
+                        <div class="setting-field"><label>Full Name</label><input type="text" id="profileName" placeholder="Your name"></div>
+                        <div class="setting-field"><label>Email</label><input type="email" id="profileEmail" placeholder="email@example.com" readonly style="background:#f5f5f5;"></div>
+                        <div class="setting-field"><label>Phone</label><input type="tel" id="profilePhone" placeholder="+94 11 234 5678"></div>
+                        <div class="setting-field"><label>Role</label><input type="text" id="profileRole" placeholder="Engineer / Manager"></div>
+                    </div>
+                    <button class="btn-green" onclick="saveProfile()" style="margin-top:10px;"><i class="fas fa-save"></i> Save Profile</button></div>
+                </div>
+            </div>
+
+            <!-- COMPANY TAB -->
+            <div class="tab-section" data-group="settings" data-tab="company">
+                <div class="card"><h3>Details</h3>
+                    <div class="settings-grid">
+                        <div class="setting-field"><label>Company Name</label><input type="text" id="companyName" placeholder="NEXWAVE Solutions (Pvt) Ltd"></div>
+                        <div class="setting-field"><label>Address</label><input type="text" id="companyAddress" placeholder="Colombo, Sri Lanka"></div>
+                        <div class="setting-field"><label>Phone</label><input type="tel" id="companyPhone" placeholder="+94 11 234 5678"></div>
+                        <div class="setting-field"><label>Email</label><input type="email" id="companyEmail" placeholder="info@nexwave.lk"></div>
+                    </div>
+                </div>
+                <div class="card"><h3>Company Information (printed on documents)</h3>
+                    <div class="setting-field">
+                        <label>Company Info Block</label>
+                        <textarea id="companyInfo" rows="4" placeholder="e.g. Registration No: PV-12345\nTax ID: TIN-98765\nBank: Commercial Bank, Colombo" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;"></textarea>
+                        <span style="font-size:11px;color:#888;">Appears below your company name on printed estimates, invoices &amp; debit notes.</span>
+                    </div>
+                </div>
+                <div class="card"><h3>General Note (printed on documents)</h3>
+                    <div class="setting-field">
+                        <label>General Note / Footer</label>
+                        <textarea id="generalNote" rows="4" placeholder="e.g. Thank you for your business!\nPayment due within 30 days." style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;"></textarea>
+                        <span style="font-size:11px;color:#888;">Appears at the bottom of every printed document.</span>
+                    </div>
+                </div>
+                <button class="btn-green" onclick="saveCompany()" style="margin-top:10px;"><i class="fas fa-save"></i> Save All Company Info</button>
+            </div>
+
+            <!-- PREFERENCES TAB -->
+            <div class="tab-section" data-group="settings" data-tab="preferences">
+                <div class="card"><h3>Preferences</h3>
+                    <div class="settings-grid">
+                        <div class="setting-field"><label>Tax Rate (%)</label><input type="number" id="taxRate" value="0" step="0.5" min="0" max="100"></div>
+                        <div class="setting-field">
+                            <label>System Down Mode</label>
+                            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="maintenanceMode">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span id="maintenanceModeLabel" style="font-size:13px;color:#666;">Disabled — Public site is live</span>
+                            </div>
+                            <span style="font-size:11px;color:#999;line-height:1.4;display:block;">
+                                When enabled, visitors to the public website will be redirected to the countdown/maintenance page.
+                                Logged-in users (ERP) will bypass this and continue normally.
+                            </span>
+                        </div>
+                    </div>
+                    <button class="btn-green" onclick="savePreferences()" style="margin-top:10px;"><i class="fas fa-save"></i> Save Preferences</button>
+                </div>
+            </div>
+
+            <!-- USERS TAB (admin only) -->
+            <div class="tab-section" data-group="settings" data-tab="users">
+                <div class="card">
+                    <h3><i class="fas fa-users-gear" style="color:var(--primary-green);"></i> User Management</h3>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                            <tbody id="userTableBody"><tr><td colspan="3" style="text-align:center;color:#888;">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../shared/js/erp.js"></script>
+    <style>
+        /* Toggle Switch */
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: #ccc; border-radius: 24px;
+            transition: background 0.25s;
+        }
+        .toggle-slider::before {
+            content: ''; position: absolute; height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background: white; border-radius: 50%;
+            transition: transform 0.25s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #b5f542; }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+    </style>
+    <script>
+        (function initSettings() {
+            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+            const client = supabase.createClient(supabaseUrl, supabaseKey);
+            let currentUserEmail = '';
+            const ADMIN_EMAIL = 'admin@nexwavex.com';
+
+            function isAdmin() {
+                return currentUserEmail === ADMIN_EMAIL || currentUserEmail === 'subhashgt@icloud.com';
+            }
+
+            /* ── LOAD SETTINGS ── */
+            async function loadAllSettings() {
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) return;
+
+                    currentUserEmail = user.email || '';
+
+                    document.getElementById('profileName').value = user.user_metadata?.full_name || '';
+                    document.getElementById('profileEmail').value = user.email || '';
+                    document.getElementById('profilePhone').value = user.phone || '';
+                    document.getElementById('profileRole').value = user.user_metadata?.role || '';
+
+                    // Show Users tab only for admin
+                    if (isAdmin()) {
+                        document.getElementById('usersTabBtn').style.display = '';
+                    }
+
+                    const { data: settings } = await client.from('app_settings').select('*').limit(1).maybeSingle();
+                    if (settings) {
+                        document.getElementById('companyName').value = settings.company_name || '';
+                        document.getElementById('companyAddress').value = settings.address || '';
+                        document.getElementById('companyPhone').value = settings.phone || '';
+                        document.getElementById('companyEmail').value = settings.email || '';
+                        document.getElementById('taxRate').value = settings.default_tax || 0;
+                    document.getElementById('companyInfo').value = settings.company_info || '';
+                    document.getElementById('generalNote').value = settings.general_note || '';
+                    document.getElementById('maintenanceMode').checked = settings.maintenance_mode === true;
+                    updateMaintenanceLabel();
+                    }
+                } catch (err) {
+                    console.warn('Settings load failed:', err);
+                }
+            }
+
+            window.saveProfile = async function() {
+                const name = document.getElementById('profileName').value.trim();
+                const role = document.getElementById('profileRole').value.trim();
+                try {
+                    const { error } = await client.auth.updateUser({
+                        data: { full_name: name, role }
+                    });
+                    if (error) throw error;
+                    showToast('Profile updated!');
+                } catch (err) {
+                    showToast('Error: ' + err.message, 'error');
+                }
+            };
+
+            window.saveCompany = async function() {
+                try {
+                    const { data: existing } = await client.from('app_settings').select('id').limit(1).maybeSingle();
+                    const payload = {
+                        company_name: document.getElementById('companyName').value.trim(),
+                        address: document.getElementById('companyAddress').value.trim(),
+                        phone: document.getElementById('companyPhone').value.trim(),
+                        email: document.getElementById('companyEmail').value.trim(),
+                        company_info: document.getElementById('companyInfo').value.trim(),
+                        general_note: document.getElementById('generalNote').value.trim()
+                    };
+                    if (existing) {
+                        await client.from('app_settings').update(payload).eq('id', existing.id);
+                    } else {
+                        await client.from('app_settings').insert(payload);
+                    }
+                    showToast('Company info saved!');
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            function updateMaintenanceLabel() {
+                const enabled = document.getElementById('maintenanceMode').checked;
+                document.getElementById('maintenanceModeLabel').innerText = enabled
+                    ? 'Enabled — Public site shows countdown page'
+                    : 'Disabled — Public site is live';
+                document.getElementById('maintenanceModeLabel').style.color = enabled ? '#c62828' : '#2e7d32';
+            }
+            window.updateMaintenanceLabel = updateMaintenanceLabel;
+            document.addEventListener('change', function(e) {
+                if (e.target.id === 'maintenanceMode') updateMaintenanceLabel();
+            });
+
+            window.savePreferences = async function() {
+                try {
+                    const { data: existing } = await client.from('app_settings').select('id').limit(1).maybeSingle();
+                    const maintenanceMode = document.getElementById('maintenanceMode').checked;
+                    const payload = {
+                        default_tax: parseFloat(document.getElementById('taxRate').value) || 0,
+                        maintenance_mode: maintenanceMode
+                    };
+                    if (existing) {
+                        await client.from('app_settings').update(payload).eq('id', existing.id);
+                    } else {
+                        await client.from('app_settings').insert({ 
+                            default_tax: payload.default_tax, 
+                            maintenance_mode: maintenanceMode,
+                            company_name: 'My Company' 
+                        });
+                    }
+                    showToast('Preferences saved!');
+                    if (maintenanceMode) {
+                        showToast('⚠ System Down mode is now ACTIVE — public visitors will see the countdown page.', 'error');
+                    }
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            /* ── USER MANAGEMENT (admin only) ── */
+            window.loadUserList = function() {
+                if (!isAdmin()) return;
+
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Loading...</td></tr>';
+
+                client.from('profiles').select('*').order('email').then(({ data, error }) => {
+                    if (error) {
+                        console.warn('Failed to load profiles:', error);
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#c62828;">Could not load users. Run the profiles migration in Supabase SQL Editor.</td></tr>';
+                        return;
+                    }
+
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">No users found.</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.map(p => `
+                        <tr>
+                            <td>${escapeHtml(p.email)}</td>
+                            <td><span class="badge badge-${p.role === 'admin' ? 'expense' : 'income'}">${escapeHtml(p.role)}</span></td>
+                            <td>
+                                <button class="btn-sm blue" onclick="toggleUserRole('${p.id}', '${p.role}')" title="Toggle role between admin/user"><i class="fas fa-exchange-alt"></i></button>
+                                <button class="btn-sm red" onclick="deleteUserProfile('${p.id}')" title="Remove user profile"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                });
+            }
+
+            window.toggleUserRole = async function(userId, currentRole) {
+                const newRole = currentRole === 'admin' ? 'user' : 'admin';
+                try {
+                    const { error } = await client.from('profiles').update({ role: newRole }).eq('id', userId);
+                    if (error) throw error;
+                    showToast(`User role changed to ${newRole}`);
+                    loadUserList();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                    console.error('toggleUserRole:', err);
+                }
+            };
+
+            window.deleteUserProfile = async function(userId) {
+                if (!confirm('Remove this user profile?')) return;
+                try {
+                    const { error } = await client.from('profiles').delete().eq('id', userId);
+                    if (error) throw error;
+                    showToast('User profile removed.');
+                    loadUserList();
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                    console.error('deleteUserProfile:', err);
+                }
+            };
+
+            loadAllSettings();
+        })();
+    </script>
+</body>
+</html>
