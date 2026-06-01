@@ -25,8 +25,14 @@ async function checkAuth() {
         return;
     }
     // Verify user is an ERP admin — prevent non-admin public users from accessing ERP
-    const { data: adminCheck } = await client.from('admin_users').select('id').eq('email', user.email).maybeSingle();
-    if (!adminCheck) {
+    try {
+        const { data: adminCheck, error: adminErr } = await client.from('admin_users').select('id').eq('email', user.email).maybeSingle();
+        if (adminErr || !adminCheck) {
+            window.location.href = '../pages/index.html';
+            return;
+        }
+    } catch (e) {
+        // admin_users table missing or query failed — redirect to public site
         window.location.href = '../pages/index.html';
         return;
     }

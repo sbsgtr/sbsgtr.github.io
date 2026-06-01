@@ -133,9 +133,7 @@
     <script src="../shared/js/erp.js"></script>
     <script>
         (function initAccounting() {
-            const supabaseUrl = 'https://kklpalpobkkkxzzgkfro.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
-            const client = supabase.createClient(supabaseUrl, supabaseKey);
+            const const client = getSupabaseClient();
 
             window.toggleTxType = function() {
                 const isExpense = document.querySelector('input[name="txType"]:checked').value === 'expense';
