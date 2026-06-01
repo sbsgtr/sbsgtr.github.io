@@ -13,21 +13,38 @@
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
         .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
-        @media (max-width: 700px) { .form-row, .form-row-3, .form-row-4 { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .form-row, .form-row-3, .form-row-4 { grid-template-columns: 1fr; } }
         .line-item { display: grid; grid-template-columns: 2fr 2fr 60px 100px 100px 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
         .line-item input { padding: 8px 10px; font-size: 12px; }
         .line-item .btn-sm { height: 34px; }
         @media (max-width: 800px) { .line-item { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { 
+            .line-item { grid-template-columns: 1fr 1fr; gap: 4px; }
+            .line-item input { font-size: 13px; padding: 8px 8px; }
+            .line-item .btn-sm { height: 36px; width: 100%; }
+        }
         .li-header { display: grid; grid-template-columns: 2fr 2fr 60px 100px 100px 36px; gap: 8px; padding: 6px 0; font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; }
         @media (max-width: 800px) { .li-header { display: none; } }
         .totals-bar { display: flex; justify-content: flex-end; gap: 30px; margin-top: 12px; padding-top: 12px; border-top: 2px solid #eee; }
         .totals-bar div { text-align: right; }
         .totals-bar .label { font-size: 11px; color: #888; text-transform: uppercase; }
         .totals-bar .value { font-size: 20px; font-weight: 700; color: var(--dark-green); }
+        @media (max-width: 600px) {
+            .totals-bar { flex-direction: column; gap: 8px; align-items: stretch; }
+            .totals-bar div { text-align: left; display: flex; justify-content: space-between; align-items: center; }
+            .totals-bar .value { font-size: 16px; }
+        }
         .doc-actions { display: flex; gap: 6px; flex-wrap: wrap; }
         .doc-actions .btn-sm { font-size: 11px; padding: 4px 10px; }
+        @media (max-width: 480px) { .doc-actions .btn-sm { font-size: 9px !important; padding: 4px 6px; } }
         .badge-proforma { background: #e3f2fd; color: #1565c0; }
         .badge-dn { background: #fce4ec; color: #c62828; }
+        
+        /* Convert dialog buttons responsive */
+        @media (max-width: 480px) {
+            #convertEstOverlay .modal-body button { padding: 12px !important; font-size: 14px !important; }
+            #convertEstOverlay .modal-body button span { font-size: 10px !important; }
+        }
     </style>
 </head>
 <body>

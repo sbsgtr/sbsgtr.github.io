@@ -169,13 +169,15 @@ function closeModal(id) {
         });
     }
 
-    const mq = window.matchMedia('(max-width: 400px)');
+    const mq = window.matchMedia('(max-width: 600px)');
     function toggleCardView(e) {
         document.querySelectorAll('.main-content table').forEach(table => {
             table.classList.toggle('card-view', e.matches);
         });
     }
-    mq.addEventListener('change', toggleCardView);
+    if (mq.addEventListener) {
+        mq.addEventListener('change', toggleCardView);
+    }
     // Run now
     labelTables();
     toggleCardView(mq);

@@ -13,8 +13,13 @@
         .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         .search-bar input { flex: 1; min-width: 200px; padding: 10px 16px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
         .search-bar select { padding: 10px 16px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
+        @media (max-width: 600px) { 
+            .search-bar button { width: 100%; justify-content: center; }
+            .search-bar input { min-width: 0; }
+            .search-bar select { width: 100%; }
+        }
         .product-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 700px) { .product-meta { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .product-meta { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>

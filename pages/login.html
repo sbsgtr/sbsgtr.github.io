@@ -21,19 +21,28 @@
         .login-btn { width: 100%; padding: 13px; background: var(--lime); color: var(--green-deep); font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s, transform 0.15s; margin-top: 6px; }
         .login-btn:hover { background: #c8f746; transform: translateY(-2px); }
         .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .login-divider { text-align: center; color: rgba(255,255,255,0.2); font-size: 12px; margin: 20px 0; position: relative; }
-        .login-divider::before, .login-divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: rgba(255,255,255,0.1); }
-        .login-divider::before { left: 0; } .login-divider::after { right: 0; }
-        .social-login { display: flex; gap: 10px; }
-        .social-login-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--muted); font-size: 14px; text-align: center; cursor: pointer; transition: background 0.2s, color 0.2s; text-decoration: none; }
-        .social-login-btn:hover { background: rgba(255,255,255,0.1); color: var(--white); }
         .login-error { color: #ff5252; font-size: 13px; text-align: center; margin-top: 10px; display: none; }
         .login-back { text-align: center; margin-top: 20px; }
         .login-back a { color: var(--muted); font-size: 13px; text-decoration: none; transition: color 0.2s; }
         .login-back a:hover { color: var(--lime); }
         .login-loading { text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px; display: none; }
         .login-loading i { animation: spin 1s linear infinite; }
+        .login-success { color: #b5f542; font-size: 13px; text-align: center; margin-top: 10px; display: none; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* Login page responsive */
+        @media (max-width: 600px) {
+            .login-page { padding: 80px 12px 30px; }
+            .login-card { padding: 28px 24px; border-radius: 16px; }
+            .login-card h2 { font-size: 28px; }
+            .login-input { padding: 14px 14px; font-size: 16px; }
+            .login-btn { padding: 14px; font-size: 16px; }
+        }
+        @media (max-width: 380px) {
+            .login-page { padding: 70px 8px 20px; }
+            .login-card { padding: 20px 16px; border-radius: 12px; }
+            .login-card h2 { font-size: 24px; }
+        }
     </style>
 </head>
 <body class="login-page">
@@ -77,18 +86,37 @@
         <form id="loginForm">
             <input type="email" class="login-input" id="emailInput" placeholder="Email address" required autocomplete="email">
             <input type="password" class="login-input" id="passwordInput" placeholder="Password" required autocomplete="current-password">
+            <div style="text-align:right;margin-top:-8px;margin-bottom:14px;">
+                <a href="#" onclick="showForgotPassword(); return false;" style="color:var(--lime);font-size:12px;text-decoration:none;font-weight:500;">Forgot Password?</a>
+            </div>
             <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-arrow-right"></i> Sign In</button>
             <div class="login-error" id="loginError">Invalid email or password.</div>
             <div class="login-loading" id="loginLoading"><i class="fas fa-spinner"></i> Signing in...</div>
         </form>
-        <div id="socialLogin">
-            <div class="login-divider">or sign in with</div>
-            <div class="social-login">
-                <button class="social-login-btn" onclick="signInWithPublicGoogle()"><i class="fab fa-google"></i> Google <span style="font-size:10px;opacity:0.5;">(NEXi)</span></button>
-                <button class="social-login-btn" onclick="signInWithPublicGithub()"><i class="fab fa-github"></i> GitHub <span style="font-size:10px;opacity:0.5;">(NEXi)</span></button>
-            </div>
-            <p style="font-size:11px;color:rgba(255,255,255,0.2);text-align:center;margin-top:8px;">Sign in for NEXi chat &amp; newsletter — <a href="#" onclick="showAdminLoginInfo(); return false;" style="color:var(--lime);text-decoration:none;">ERP admin?</a></p>
+
+        <!-- Forgot Password Form (hidden by default) -->
+        <div id="forgotPasswordForm" style="display:none;">
+            <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;">Enter your email address and we'll send you a link to reset your password.</p>
+            <input type="email" class="login-input" id="forgotEmailInput" placeholder="Email address" required autocomplete="email">
+            <button type="button" class="login-btn" id="forgotPwBtn" onclick="sendPasswordReset()"><i class="fas fa-paper-plane"></i> Send Reset Link</button>
+            <div class="login-success" id="forgotSuccess" style="display:none;">✓ Reset link sent! Check your email.</div>
+            <div class="login-error" id="forgotError" style="display:none;"></div>
+            <div class="login-loading" id="forgotLoading" style="display:none;"><i class="fas fa-spinner"></i> Sending...</div>
+            <div class="login-back" style="margin-top:16px;"><a href="#" onclick="hideForgotPassword(); return false;"><i class="fas fa-arrow-left"></i> Back to Sign In</a></div>
         </div>
+
+        <!-- Reset Password Form (shown on recovery redirect) -->
+        <div id="resetPasswordForm" style="display:none;">
+            <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;">Choose a new password for your account.</p>
+            <input type="password" class="login-input" id="newPasswordInput" placeholder="New password" required minlength="6" autocomplete="new-password">
+            <input type="password" class="login-input" id="confirmPasswordInput" placeholder="Confirm new password" required minlength="6" autocomplete="new-password">
+            <button type="button" class="login-btn" id="resetPwBtn" onclick="updatePassword()"><i class="fas fa-key"></i> Update Password</button>
+            <div class="login-success" id="resetSuccess" style="display:none;">✓ Password updated successfully!</div>
+            <div class="login-error" id="resetError" style="display:none;"></div>
+            <div class="login-loading" id="resetLoading" style="display:none;"><i class="fas fa-spinner"></i> Updating...</div>
+            <div class="login-back" style="margin-top:16px;"><a href="login.html"><i class="fas fa-arrow-right"></i> Go to Login</a></div>
+        </div>
+
         <div class="login-back"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a></div>
     </div>
 
@@ -97,9 +125,11 @@
     <script src="../shared/js/public.js"></script>
     <script>
         (function initLoginPage() {
+            let loginInitialized = false;
+
             // Wait for public.js to initialize nexwaveClient
             const checkClient = setInterval(function() {
-                if (window.nexwaveClient) {
+                if (window.nexwaveClient && !loginInitialized) {
                     clearInterval(checkClient);
                     setupLogin(window.nexwaveClient);
                 }
@@ -111,20 +141,13 @@
             }, 5000);
 
             function setupLogin(client) {
+                if (loginInitialized) return;
+                loginInitialized = true;
+
                 const form = document.getElementById('loginForm');
                 const errorEl = document.getElementById('loginError');
                 const loadingEl = document.getElementById('loginLoading');
                 const btn = document.getElementById('loginBtn');
-
-                // Check maintenance mode — disable new registration if active
-                client.from('app_settings').select('maintenance_mode').limit(1).maybeSingle().then(({ data: settings }) => {
-                    if (settings?.maintenance_mode === true) {
-                        const socialSection = document.getElementById('socialLogin');
-                        if (socialSection) {
-                            socialSection.style.display = 'none';
-                        }
-                    }
-                });
 
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -137,38 +160,156 @@
 
                     const { error } = await client.auth.signInWithPassword({ email, password });
 
-                    loadingEl.style.display = 'none';
-                    btn.disabled = false;
-
                     if (error) {
+                        loadingEl.style.display = 'none';
+                        btn.disabled = false;
                         errorEl.innerText = error.message || 'Invalid email or password.';
                         errorEl.style.display = 'block';
-                    } else {
+                        return;
+                    }
+
+                    // Verify user is an ERP admin before redirecting to dashboard
+                    try {
+                        const { data: { user } } = await client.auth.getUser();
+                        const { data: adminCheck } = await client.from('admin_users').select('id').eq('email', user?.email || email).maybeSingle();
+                        loadingEl.style.display = 'none';
+                        btn.disabled = false;
+                        if (adminCheck) {
+                            window.location.href = '../erp/corporate.html';
+                        } else {
+                            // Not an admin — sign out and show access denied
+                            await client.auth.signOut();
+                            errorEl.innerText = 'Access denied. You do not have ERP admin access.';
+                            errorEl.style.display = 'block';
+                        }
+                    } catch (e) {
+                        // If admin_users table is missing or query fails, fall through
+                        // erp.js checkAuth() will do the final admin verification
+                        loadingEl.style.display = 'none';
+                        btn.disabled = false;
                         window.location.href = '../erp/corporate.html';
                     }
                 });
-
-                // Public sign-in functions are now in public.js (signInWithPublicGoogle / signInWithPublicGithub)
             }
 
-            // Show admin login info when user clicks the link
-            window.showAdminLoginInfo = function() {
-                const socialSection = document.getElementById('socialLogin');
-                const loginSub = document.querySelector('.login-sub');
-                if (socialSection) socialSection.style.display = 'none';
-                if (loginSub) loginSub.innerText = 'Sign in with your admin credentials';
-                // Only add restore link once
-                const backLink = document.querySelector('.login-back');
-                if (backLink && !document.querySelector('.restore-link')) {
-                    const restoreLink = document.createElement('p');
-                    restoreLink.className = 'restore-link';
-                    restoreLink.style.cssText = 'margin-top:10px;font-size:11px;color:rgba(255,255,255,0.2);text-align:center;';
-                    restoreLink.innerHTML = '<a href="#" onclick="location.reload(); return false;" style="color:var(--lime);text-decoration:none;">Show NEXi sign-in options</a>';
-                    backLink.appendChild(restoreLink);
+            // ── FORGOT PASSWORD ──
+            window.showForgotPassword = function() {
+                document.getElementById('loginForm').style.display = 'none';
+                document.querySelector('.restore-link')?.remove();
+                document.getElementById('forgotPasswordForm').style.display = 'block';
+                document.getElementById('forgotError').style.display = 'none';
+                document.getElementById('forgotSuccess').style.display = 'none';
+            };
+
+            window.hideForgotPassword = function() {
+                document.getElementById('forgotPasswordForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            };
+
+            window.sendPasswordReset = async function() {
+                const email = document.getElementById('forgotEmailInput').value.trim();
+                if (!email) {
+                    document.getElementById('forgotError').innerText = 'Please enter your email address.';
+                    document.getElementById('forgotError').style.display = 'block';
+                    return;
+                }
+                const errorEl = document.getElementById('forgotError');
+                const successEl = document.getElementById('forgotSuccess');
+                const loadingEl = document.getElementById('forgotLoading');
+                const btn = document.getElementById('forgotPwBtn');
+                errorEl.style.display = 'none';
+                successEl.style.display = 'none';
+                loadingEl.style.display = 'block';
+                btn.disabled = true;
+
+                try {
+                    const { error } = await window.nexwaveClient.auth.resetPasswordForEmail(email, {
+                        redirectTo: window.location.origin + '/pages/login.html'
+                    });
+                    if (error) throw error;
+                    successEl.style.display = 'block';
+                    // Cooldown: disable button for 30s to prevent spam
+                    setTimeout(() => {
+                        btn.disabled = false;
+                    }, 30000);
+                } catch (err) {
+                    errorEl.innerText = err.message || 'Failed to send reset email. Please try again.';
+                    errorEl.style.display = 'block';
+                } finally {
+                    loadingEl.style.display = 'none';
                 }
             };
 
-            // Fallback in case client is already available
+            // ── PASSWORD RESET (recovery redirect handler) ──
+            window.updatePassword = async function() {
+                const newPw = document.getElementById('newPasswordInput').value;
+                const confirmPw = document.getElementById('confirmPasswordInput').value;
+                const errorEl = document.getElementById('resetError');
+                const successEl = document.getElementById('resetSuccess');
+                const loadingEl = document.getElementById('resetLoading');
+                const btn = document.getElementById('resetPwBtn');
+                errorEl.style.display = 'none';
+                successEl.style.display = 'none';
+
+                if (!newPw || newPw.length < 6) {
+                    errorEl.innerText = 'Password must be at least 6 characters.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                if (newPw !== confirmPw) {
+                    errorEl.innerText = 'Passwords do not match.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                loadingEl.style.display = 'block';
+                btn.disabled = true;
+
+                try {
+                    const { error } = await window.nexwaveClient.auth.updateUser({ password: newPw });
+                    if (error) throw error;
+                    successEl.style.display = 'block';
+                    document.getElementById('newPasswordInput').value = '';
+                    document.getElementById('confirmPasswordInput').value = '';
+                } catch (err) {
+                    errorEl.innerText = err.message || 'Failed to update password.';
+                    errorEl.style.display = 'block';
+                } finally {
+                    loadingEl.style.display = 'none';
+                    btn.disabled = false;
+                }
+            };
+
+            // ── Detect password recovery redirect ──
+            function showResetPasswordForm() {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('forgotPasswordForm').style.display = 'none';
+                document.getElementById('resetPasswordForm').style.display = 'block';
+                document.querySelector('.login-sub').innerText = 'Reset your password';
+            }
+
+            (function checkRecoveryMode() {
+                const rc = window.nexwaveClient;
+                if (!rc) return;
+                // Supabase JS client auto-processes recovery tokens and fires PASSWORD_RECOVERY
+                rc.auth.onAuthStateChange(async (event, session) => {
+                    if (event === 'PASSWORD_RECOVERY') {
+                        showResetPasswordForm();
+                    }
+                });
+
+                // Immediately check if URL already has recovery params (session may already be set)
+                const hash = window.location.hash || '';
+                if (hash.includes('type=recovery') || hash.includes('access_token')) {
+                    rc.auth.getSession().then(({ data: { session } }) => {
+                        if (session) {
+                            showResetPasswordForm();
+                        }
+                    });
+                }
+            })();
+
+            // Fallback in case client is already available (won't double-fire due to loginInitialized guard)
             if (window.nexwaveClient) {
                 setupLogin(window.nexwaveClient);
             }

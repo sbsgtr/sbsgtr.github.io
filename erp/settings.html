@@ -11,10 +11,17 @@
     <link rel="stylesheet" href="../shared/css/erp.css">
     <style>
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { 
+            .settings-grid { grid-template-columns: 1fr; }
+            .card { padding: 14px; }
+        }
         .setting-field { margin-bottom: 14px; }
         .setting-field label { font-size: 11px; font-weight: 600; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
         .setting-field input, .setting-field select { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+        @media (max-width: 600px) {
+            .setting-field input, .setting-field select { min-height: 44px; font-size: 16px; }
+            #profileForm button { width: 100%; justify-content: center; }
+        }
     </style>
 </head>
 <body>
@@ -64,6 +71,27 @@
                         <div class="setting-field"><label>Role</label><input type="text" id="profileRole" placeholder="Engineer / Manager"></div>
                     </div>
                     <button class="btn-green" onclick="saveProfile()" style="margin-top:10px;"><i class="fas fa-save"></i> Save Profile</button></div>
+                </div>
+
+                <div class="card" style="margin-top:24px;">
+                    <h3><i class="fas fa-key" style="color:var(--primary-green);"></i> Change Password</h3>
+                    <div style="max-width:400px;">
+                        <div class="setting-field">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" placeholder="Enter current password" autocomplete="current-password">
+                        </div>
+                        <div class="setting-field">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password">
+                        </div>
+                        <div class="setting-field">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" minlength="6" autocomplete="new-password">
+                        </div>
+                        <div id="changePwError" style="color:#c62828;font-size:13px;margin-bottom:10px;display:none;"></div>
+                        <div id="changePwSuccess" style="color:#2e7d32;font-size:13px;margin-bottom:10px;display:none;">✓ Password changed successfully!</div>
+                        <button class="btn-green" onclick="changePassword()"><i class="fas fa-key"></i> Update Password</button>
+                    </div>
                 </div>
             </div>
 
@@ -319,6 +347,64 @@
                 } catch (err) {
                     showToast('Error: ' + (err.message || err), 'error');
                     console.error('toggleUserRole:', err);
+                }
+            };
+
+            /* ── CHANGE PASSWORD ── */
+            window.changePassword = async function() {
+                const currentPw = document.getElementById('currentPassword').value;
+                const newPw = document.getElementById('newPassword').value;
+                const confirmPw = document.getElementById('confirmNewPassword').value;
+                const errorEl = document.getElementById('changePwError');
+                const successEl = document.getElementById('changePwSuccess');
+                errorEl.style.display = 'none';
+                successEl.style.display = 'none';
+
+                if (!currentPw) {
+                    errorEl.innerText = 'Please enter your current password.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                if (!newPw || newPw.length < 6) {
+                    errorEl.innerText = 'New password must be at least 6 characters.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                if (newPw !== confirmPw) {
+                    errorEl.innerText = 'New passwords do not match.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                // Verify current password by attempting to sign in
+                try {
+                    const email = document.getElementById('profileEmail').value;
+                    if (!email) {
+                        errorEl.innerText = 'Could not verify your email. Please reload the page.';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    const { error: signInError } = await client.auth.signInWithPassword({
+                        email: email,
+                        password: currentPw
+                    });
+                    if (signInError) {
+                        errorEl.innerText = 'Current password is incorrect.';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+
+                    // Current password verified — update to new password
+                    const { error: updateError } = await client.auth.updateUser({ password: newPw });
+                    if (updateError) throw updateError;
+
+                    successEl.style.display = 'block';
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } catch (err) {
+                    errorEl.innerText = err.message || 'Failed to update password.';
+                    errorEl.style.display = 'block';
                 }
             };
 
