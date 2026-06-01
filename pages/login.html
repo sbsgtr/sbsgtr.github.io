@@ -155,39 +155,21 @@
                     loadingEl.style.display = 'block';
                     btn.disabled = true;
 
-                    const email = document.getElementById('emailInput').value;
-                    const password = document.getElementById('passwordInput').value;
-
-                    const { error } = await client.auth.signInWithPassword({ email, password });
-
-                    if (error) {
-                        loadingEl.style.display = 'none';
-                        btn.disabled = false;
-                        errorEl.innerText = error.message || 'Invalid email or password.';
-                        errorEl.style.display = 'block';
-                        return;
-                    }
-
-                    // Verify user is an ERP admin before redirecting to dashboard
                     try {
-                        const { data: { user } } = await client.auth.getUser();
-                        const { data: adminCheck } = await client.from('admin_users').select('id').eq('email', user?.email || email).maybeSingle();
-                        loadingEl.style.display = 'none';
-                        btn.disabled = false;
-                        if (adminCheck) {
-                            window.location.href = '../erp/corporate.html';
-                        } else {
-                            // Not an admin — sign out and show access denied
-                            await client.auth.signOut();
-                            errorEl.innerText = 'Access denied. You do not have ERP admin access.';
-                            errorEl.style.display = 'block';
-                        }
-                    } catch (e) {
-                        // If admin_users table is missing or query fails, fall through
-                        // erp.js checkAuth() will do the final admin verification
-                        loadingEl.style.display = 'none';
-                        btn.disabled = false;
+                        const email = document.getElementById('emailInput').value;
+                        const password = document.getElementById('passwordInput').value;
+
+                        const { error } = await client.auth.signInWithPassword({ email, password });
+                        if (error) throw new Error(error.message);
+
+                        // Auth succeeded — redirect to ERP dashboard.
+                        // erp.js checkAuth() will verify admin access on every ERP page.
                         window.location.href = '../erp/corporate.html';
+                    } catch (err) {
+                        loadingEl.style.display = 'none';
+                        btn.disabled = false;
+                        errorEl.innerText = err.message || 'Invalid email or password.';
+                        errorEl.style.display = 'block';
                     }
                 });
             }
