@@ -518,7 +518,7 @@
                     footnotes: 'Payment Terms: ' + (est.payment_terms || 'Net 30') + (est.po_number ? ' | PO: ' + est.po_number : ''),
                     company,
                     po_number: est.po_number || '',
-                    id: est.id  // Pass estimate UUID for QR verification link
+                    id: est.estimate_number || est.id  // Pass estimate number for QR verification
                 };
             }
 
@@ -546,7 +546,7 @@
                     footnotes: '',
                     company,
                     po_number: inv.po_number || '',
-                    id: inv.id  // Pass invoice UUID for QR verification link
+                    id: inv.invoice_number || inv.id  // Pass invoice number for QR verification
                 };
             }
 
