@@ -299,6 +299,18 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     height: 100% !important;
     display: block;
 }
+.print-document .doc-qr-code img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+.print-document .doc-qr-img {
+    width: 2cm;
+    height: 2cm;
+    display: block;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+}
 .print-document .doc-qr-signature-text {
     font-size: 7.5pt;
     color: #666;
