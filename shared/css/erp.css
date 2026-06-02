@@ -310,6 +310,8 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     display: block;
     flex-shrink: 0;
     image-rendering: pixelated;
+    border: 1px solid #ddd;
+    border-radius: 2px;
 }
 .print-document .doc-qr-signature-text {
     font-size: 7.5pt;

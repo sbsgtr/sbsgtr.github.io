@@ -303,36 +303,9 @@ async function recordDebitNoteAsExpense(data) {
     return result;
 }
 
-/* ── Eagerly load QR library on page init so it's ready for print ── */
-(function preloadQRLib() {
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
-    s.async = true;
-    s.onerror = function() {
-        var s2 = document.createElement('script');
-        s2.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
-        s2.async = true;
-        document.head.appendChild(s2);
-    };
-    document.head.appendChild(s);
-})();
-
-/* ── Generate QR code data URI synchronously (if library is loaded) ── */
-function generateQRDataUri(text) {
-    try {
-        if (typeof qrcode_generator !== 'undefined') {
-            var qr = qrcode_generator(0, 'L');
-            qr.addData(text);
-            qr.make();
-            return qr.createDataURL(4, 0);
-        } else if (typeof QRCode !== 'undefined') {
-            // QRCode library needs a DOM element — we'll handle async fallback
-            return null;
-        }
-    } catch (e) {
-        console.warn('QR generation error:', e);
-    }
-    return null;
+/* ── QR Code API — generates QR image URL using goqr.me API (no JS library needed) ── */
+function getQRImageUrl(text) {
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=' + encodeURIComponent(text);
 }
 
 /* ── Print Preview Helper ── */
@@ -378,11 +351,6 @@ function openPrintPreview(title, contentHtml) {
 
     // Apply the current paper size CSS class so CSS handles dimensions (not JS)
     applyPaperSizeClass(_currentPaperSize);
-
-    // Generate QR codes for any remaining (unrendered) verification elements
-    setTimeout(function() {
-        generatePrintQRs();
-    }, 50);
 }
 
 /* ── Generate QR codes in the print document ── */
@@ -566,12 +534,12 @@ function buildPrintDoc(config) {
         `;
     });
 
-    // Generate QR code data URI for inline embedding (reliable for print)
-    var qrDataUrl = null;
+    // Generate QR code image URL using API (no JS library dependency)
+    var qrImgUrl = null;
     var qrTargetUrl = null;
     if (id && (type === 'invoice' || type === 'proforma' || type === 'estimate')) {
         qrTargetUrl = window.location.origin + '/pages/verify.html?id=' + encodeURIComponent(id);
-        qrDataUrl = generateQRDataUri(qrTargetUrl);
+        qrImgUrl = getQRImageUrl(qrTargetUrl);
     }
 
     const grandTotal = totals?.total || totals?.grand_total || lineItems.reduce((s, i) => s + (i.total || 0), 0);
@@ -677,10 +645,8 @@ function buildPrintDoc(config) {
             <div class="doc-signatory">
                 ${id && (type === 'invoice' || type === 'proforma' || type === 'estimate') ? `
                 <div class="doc-qr-signature-wrap">
-                    ${qrDataUrl
-                        ? `<img src="${qrDataUrl}" class="doc-qr-img" alt="Scan to verify" width="80" height="80">`
-                        : `<div class="doc-qr-code" id="qr-${escapeHtml(id)}" data-id="${escapeHtml(id)}"></div>`
-                    }
+                    <img src="${qrImgUrl}" class="doc-qr-img" alt="Scan to verify" width="100" height="100"
+                         onerror="this.style.display='none';var d=document.createElement('div');d.className='doc-qr-code';d.setAttribute('data-id','${escapeHtml(id)}');this.parentNode.insertBefore(d,this);setTimeout(function(){generatePrintQRs();},100);">
                     <div class="doc-qr-signature-text">System Generated Document<br>Scan to verify</div>
                 </div>
                 ` : `
