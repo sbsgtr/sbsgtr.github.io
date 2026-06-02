@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0b2b0f">
+    <title>Verify Invoice — NEXWAVE</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green-deep:   #071a09;
+            --green-dark:   #0b2b0f;
+            --green-mid:    #1a5c20;
+            --green-bright: #2e7d32;
+            --lime:         #b5f542;
+            --white:        #f8fdf8;
+            --muted:        #8aab8c;
+            --radius:       12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(160deg, #071a09 0%, #0c2e10 50%, #071a09 100%);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 16px;
+        }
+
+        .verify-container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        /* ── Header ── */
+        .verify-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+        .verify-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .verify-logo {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+        .verify-brand-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            letter-spacing: 4px;
+            color: var(--white);
+            line-height: 1;
+        }
+        .verify-brand-text span { color: var(--lime); }
+        .verify-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(181, 245, 66, 0.1);
+            border: 1px solid rgba(181, 245, 66, 0.25);
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--lime);
+            letter-spacing: 0.04em;
+        }
+        .verify-badge i { font-size: 12px; }
+
+        /* ── Title Card ── */
+        .verify-title-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px 36px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .verify-title-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--lime), transparent);
+        }
+        .verify-title-card .shield-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            background: var(--lime);
+            clip-path: polygon(50% 0%, 90% 18%, 90% 55%, 68% 88%, 50% 100%, 32% 88%, 10% 55%, 10% 18%);
+            display: block;
+            box-shadow: 0 0 20px rgba(181, 245, 66, 0.5);
+            animation: shieldPulse 1.8s infinite alternate;
+        }
+        @keyframes shieldPulse {
+            0% { box-shadow: 0 0 12px rgba(181, 245, 66, 0.4); opacity: 0.8; }
+            100% { box-shadow: 0 0 28px rgba(181, 245, 66, 0.8); opacity: 1; }
+        }
+        .verify-title-card h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 1px;
+            color: var(--white);
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+        .verify-title-card h1 span { color: var(--lime); }
+        .verify-title-card p {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 300;
+        }
+
+        /* ── Loading / Error States ── */
+        .verify-loading,
+        .verify-error {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 48px 36px;
+            text-align: center;
+        }
+        .verify-loading .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(181, 245, 66, 0.2);
+            border-top-color: var(--lime);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .verify-loading p { color: var(--muted); font-size: 14px; }
+        .verify-error { color: #ff8a80; }
+        .verify-error i { font-size: 32px; margin-bottom: 12px; display: block; }
+        .verify-error h2 { font-size: 18px; margin-bottom: 8px; font-weight: 600; }
+        .verify-error p { font-size: 13px; color: var(--muted); }
+
+        /* ── Invoice Card ── */
+        .invoice-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* Status watermark */
+        .invoice-card .status-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 80px;
+            letter-spacing: 8px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.08;
+            white-space: nowrap;
+        }
+        .invoice-card .status-watermark.paid {
+            color: #69f0ae;
+            opacity: 0.12;
+        }
+        .invoice-card .status-watermark.pending {
+            color: #ffab40;
+            opacity: 0.08;
+        }
+
+        /* ── Invoice Header ── */
+        .inv-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inv-header-left h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 1.5px;
+            color: var(--white);
+            line-height: 1;
+        }
+        .inv-header-left h2 span { color: var(--lime); }
+        .inv-header-left .inv-number {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .inv-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .inv-status-badge.paid {
+            background: rgba(105, 240, 174, 0.12);
+            border: 1px solid rgba(105, 240, 174, 0.3);
+            color: #69f0ae;
+        }
+        .inv-status-badge.pending {
+            background: rgba(255, 171, 64, 0.12);
+            border: 1px solid rgba(255, 171, 64, 0.3);
+            color: #ffab40;
+        }
+        .inv-status-badge i { font-size: 14px; }
+
+        /* ── Invoice Body ── */
+        .inv-body {
+            padding: 20px 28px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Customer info */
+        .inv-customer {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .inv-customer .label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .inv-customer .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--white);
+        }
+        .inv-customer .detail {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* Meta grid */
+        .inv-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .inv-meta-item .meta-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+        }
+        .inv-meta-item .meta-value {
+            font-size: 13px;
+            color: var(--white);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Items table */
+        .inv-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        .inv-items-table th {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .inv-items-table th.r { text-align: right; }
+        .inv-items-table td {
+            padding: 8px 10px;
+            font-size: 13px;
+            color: var(--white);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .inv-items-table td.r { text-align: right; }
+
+        /* Blurred price/total cells */
+        .blur-amount {
+            filter: blur(5px);
+            user-select: none;
+            cursor: default;
+            transition: filter 0.3s ease;
+            display: inline-block;
+        }
+        .blur-amount:hover {
+            filter: blur(0);
+        }
+        .blur-label {
+            font-size: 9px;
+            color: var(--muted);
+            font-style: italic;
+            display: block;
+            margin-top: 1px;
+        }
+
+        /* Totals */
+        .inv-totals {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            padding-top: 12px;
+            border-top: 2px solid rgba(181, 245, 66, 0.2);
+        }
+        .inv-total-row {
+            display: flex;
+            gap: 32px;
+            font-size: 13px;
+            color: var(--white);
+        }
+        .inv-total-row .label { color: var(--muted); }
+        .inv-grand-total {
+            display: flex;
+            gap: 32px;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--lime);
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .inv-grand-total .label { color: var(--white); }
+
+        /* ── Footer ── */
+        .verify-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.25);
+            line-height: 1.7;
+        }
+        .verify-footer a {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .verify-footer a:hover { color: var(--lime); }
+        .verify-footer .sep {
+            margin: 0 8px;
+            color: rgba(255, 255, 255, 0.12);
+        }
+
+        .verify-back {
+            text-align: center;
+            margin-top: 12px;
+        }
+        .verify-back a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .verify-back a:hover { color: var(--lime); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            body { padding: 24px 12px; }
+            .verify-title-card { padding: 24px 20px; border-radius: 16px; }
+            .verify-title-card h1 { font-size: 26px; }
+            .inv-header { padding: 20px 20px; flex-direction: column; gap: 12px; align-items: flex-start; }
+            .inv-body { padding: 16px 20px; }
+            .inv-meta-grid { grid-template-columns: 1fr; }
+            .inv-items-table { font-size: 12px; }
+            .inv-items-table th, .inv-items-table td { padding: 6px 6px; font-size: 12px; }
+            .invoice-card .status-watermark { font-size: 48px; }
+            .inv-totals { align-items: flex-start; }
+            .inv-total-row, .inv-grand-total { width: 100%; justify-content: space-between; }
+            .verify-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+        }
+        @media (max-width: 380px) {
+            body { padding: 16px 8px; }
+            .verify-title-card { padding: 18px 14px; }
+            .inv-header { padding: 16px 14px; }
+            .inv-body { padding: 12px 14px; }
+            .verify-badge { font-size: 10px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <!-- Header -->
+        <div class="verify-header">
+            <div class="verify-brand">
+                <img src="../logo.png" class="verify-logo" alt="NEXWAVE Logo" onerror="this.style.display='none'">
+                <span class="verify-brand-text">NEX<span>WAVE</span></span>
+            </div>
+            <div class="verify-badge">
+                <i class="fas fa-shield-alt"></i> Document Verification
+            </div>
+        </div>
+
+        <!-- Title Card -->
+        <div class="verify-title-card">
+            <div class="shield-icon"></div>
+            <h1>Verified Original <span>Document</span></h1>
+            <p>This page confirms the authenticity of a document issued by NEXWAVE Solutions (Pvt) Ltd.</p>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <div id="verifyContent">
+            <!-- Loading State -->
+            <div class="verify-loading" id="loadingState">
+                <div class="spinner"></div>
+                <p>Verifying document...</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="verify-footer">
+            NEXWAVE Solutions (Pvt) Ltd &middot; Colombo, Sri Lanka<br>
+            <a href="index.html">Home</a>
+            <span class="sep">|</span>
+            <a href="../privacy.html">Privacy</a>
+            <span class="sep">|</span>
+            <a href="../terms.html">Terms</a>
+        </div>
+
+        <div class="verify-back">
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Back to NEXWAVE</a>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        (function initVerifyPage() {
+            // ── Supabase config (same public anon key used across the site) ──
+            const SUPABASE_URL = 'https://kklpalpobkkkxzzgkfro.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
+
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const contentEl = document.getElementById('verifyContent');
+
+            // ── Get invoice ID from URL ──
+            const params = new URLSearchParams(window.location.search);
+            const invoiceId = params.get('id');
+
+            if (!invoiceId) {
+                showError('Missing Invoice ID', 'No invoice reference was provided. Please check the link or scan the QR code again.');
+                return;
+            }
+
+            // ── Fetch and display document ──
+            loadDocument(invoiceId);
+
+            async function loadDocument(id) {
+                try {
+                    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+                    // Try invoices table first, then estimates table
+                    let doc, docType, customer;
+
+                    if (uuidPattern.test(id)) {
+                        // Attempt 1: invoices table by UUID
+                        let { data, error } = await client.from('invoices').select('*').eq('id', id).maybeSingle();
+                        if (data) { doc = data; docType = 'invoice'; }
+                        if (error) throw error;
+
+                        // Attempt 2: estimates table by UUID
+                        if (!doc) {
+                            let estData, estError;
+                            ({ data: estData, error: estError } = await client.from('estimates').select('*').eq('id', id).maybeSingle());
+                            if (estData) { doc = estData; docType = 'estimate'; }
+                            if (estError) throw estError;
+                        }
+                    } else {
+                        // Treat id as invoice_number or estimate_number
+                        let { data, error } = await client.from('invoices').select('*').eq('invoice_number', id).maybeSingle();
+                        if (data) { doc = data; docType = 'invoice'; }
+                        if (error) throw error;
+
+                        if (!doc) {
+                            let estData, estError;
+                            ({ data: estData, error: estError } = await client.from('estimates').select('*').eq('estimate_number', id).maybeSingle());
+                            if (estData) { doc = estData; docType = 'estimate'; }
+                            if (estError) throw estError;
+                        }
+                    }
+
+                    if (!doc) {
+                        showError('Document Not Found', 'No matching document could be found. The document may have been removed or the link may be invalid.');
+                        return;
+                    }
+
+                    // ── Fetch customer details ──
+                    if (doc.customer_id) {
+                        const { data: cData } = await client
+                            .from('customers')
+                            .select('contact_person, company_name, address, city, email')
+                            .eq('id', doc.customer_id)
+                            .maybeSingle();
+                        customer = cData;
+                    }
+
+                    // ── Parse or fetch items ──
+                    let items = [];
+                    if (docType === 'invoice') {
+                        // items stored as JSONB
+                        if (doc.items && typeof doc.items === 'string') {
+                            try { doc.items = JSON.parse(doc.items); } catch (e) { doc.items = []; }
+                        }
+                        if (Array.isArray(doc.items)) items = doc.items;
+                    } else {
+                        // estimate — items in separate estimate_items table
+                        const { data: estItems } = await client
+                            .from('estimate_items')
+                            .select('*')
+                            .eq('estimate_number', doc.estimate_number);
+                        if (estItems) {
+                            items = estItems.map(function(i) {
+                                return {
+                                    description: i.product_name || '',
+                                    quantity: i.qty || 0,
+                                    unit_price: i.price || 0,
+                                    total: i.total || 0
+                                };
+                            });
+                        }
+                    }
+
+                    // Render the document
+                    renderDocument(doc, docType, customer, items);
+
+                } catch (err) {
+                    console.error('Verify error:', err);
+                    if (err.code === 'PGRST301' || err.message?.includes('permission') || err.message?.includes('violates row-level security')) {
+                        showError('Access Restricted',
+                            'A database policy may be missing. Please ensure the public verification policies ' +
+                            'have been applied to the invoices and estimates tables. Contact your system administrator.');
+                    } else {
+                        showError('Verification Failed', err.message || 'An unexpected error occurred. Please try again later.');
+                    }
+                }
+            }
+
+            function renderDocument(doc, docType, customer, items) {
+                const isInvoice = docType === 'invoice';
+                const isEstimate = docType === 'estimate';
+                const isPaid = doc.status === 'paid';
+
+                let statusLabel, statusClass;
+                if (isEstimate) {
+                    statusLabel = 'ESTIMATE';
+                    statusClass = 'pending';
+                } else if (isPaid) {
+                    statusLabel = 'PAID';
+                    statusClass = 'paid';
+                } else {
+                    statusLabel = 'PENDING';
+                    statusClass = 'pending';
+                }
+
+                // Watermark text
+                let watermarkText;
+                if (isEstimate) watermarkText = 'ESTIMATE';
+                else if (isPaid) watermarkText = 'PAID';
+                else watermarkText = 'PENDING';
+
+                // Format dates
+                const createdDate = doc.created_at
+                    ? new Date(doc.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+                    : '—';
+
+                // Format money with blur
+                function blurMoney(amount) {
+                    const formatted = 'LKR ' + parseFloat(amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    return `<span class="blur-amount" title="Sensitive data — hover to reveal">${formatted}</span><span class="blur-label">(hover to reveal)</span>`;
+                }
+
+                // Document title and number
+                const docTitle = isEstimate ? 'ESTIMATE' : 'INVOICE';
+                const docNumber = doc.estimate_number || doc.invoice_number || 'N/A';
+
+                // Customer info
+                const customerName = customer?.company_name || customer?.contact_person || 'Client';
+                const customerLocation = [customer?.address, customer?.city].filter(Boolean).join(', ');
+
+                // Items HTML
+                let itemsHtml = '';
+                if (items && items.length > 0) {
+                    items.forEach(function(item) {
+                        const desc = item.description || item.product_name || item.name || 'Item';
+                        const qty = item.quantity || item.qty || 0;
+                        const price = item.unit_price || item.price || 0;
+                        const total = item.total || (qty * price) || 0;
+                        itemsHtml += '<tr>' +
+                            '<td>' + escapeHtml(desc) + '</td>' +
+                            '<td class="r">' + qty + '</td>' +
+                            '<td class="r">' + blurMoney(price) + '</td>' +
+                            '<td class="r">' + blurMoney(total) + '</td>' +
+                            '</tr>';
+                    });
+                } else {
+                    itemsHtml = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No items recorded</td></tr>';
+                }
+
+                // Totals
+                const totalAmount = parseFloat(doc.total_amount || 0);
+
+                contentEl.innerHTML =
+                    '<div class="invoice-card" id="invoiceCard">' +
+                        '<div class="status-watermark ' + statusClass + '">' + watermarkText + '</div>' +
+                        '<div class="inv-header">' +
+                            '<div class="inv-header-left">' +
+                                '<h2>' + docTitle + '</h2>' +
+                                '<div class="inv-number">' + escapeHtml(docNumber) + '</div>' +
+                            '</div>' +
+                            '<div class="inv-status-badge ' + statusClass + '">' +
+                                '<i class="fas ' + (isPaid ? 'fa-check-circle' : isEstimate ? 'fa-file-signature' : 'fa-clock') + '"></i> ' +
+                                (isEstimate ? 'ESTIMATE' : isPaid ? 'PAID' : 'PENDING') +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="inv-body">' +
+                            // Customer
+                            '<div class="inv-customer">' +
+                                '<div class="label">' + (isEstimate ? 'Prepared For' : 'Bill To') + '</div>' +
+                                '<div class="name">' + escapeHtml(customerName) + '</div>' +
+                                (customerLocation ? '<div class="detail">' + escapeHtml(customerLocation) + '</div>' : '') +
+                                (customer?.email ? '<div class="detail">' + escapeHtml(customer.email) + '</div>' : '') +
+                            '</div>' +
+                            // Meta
+                            '<div class="inv-meta-grid">' +
+                                '<div class="inv-meta-item"><div class="meta-label">Date Issued</div><div class="meta-value">' + createdDate + '</div></div>' +
+                                '<div class="inv-meta-item"><div class="meta-label">Status</div><div class="meta-value" style="color:' + (isPaid ? '#69f0ae' : '#ffab40') + ';font-weight:600;">' + (isEstimate ? 'Estimate' : isPaid ? 'Paid' : 'Pending Payment') + '</div></div>' +
+                                '<div class="inv-meta-item"><div class="meta-label">Currency</div><div class="meta-value">LKR</div></div>' +
+                            '</div>' +
+                            // Items table
+                            '<table class="inv-items-table">' +
+                                '<thead><tr>' +
+                                    '<th>Description</th>' +
+                                    '<th class="r">Qty</th>' +
+                                    '<th class="r">Rate</th>' +
+                                    '<th class="r">Amount</th>' +
+                                '</tr></thead>' +
+                                '<tbody>' + itemsHtml + '</tbody>' +
+                            '</table>' +
+                            // Totals
+                            '<div class="inv-totals">' +
+                                '<div class="inv-total-row"><span class="label">Subtotal</span><span>' + blurMoney(totalAmount) + '</span></div>' +
+                                '<div class="inv-grand-total"><span class="label">Total</span><span>' + blurMoney(totalAmount) + '</span></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+
+                // Add small note at bottom
+                const note = document.createElement('div');
+                note.style.cssText = 'text-align:center;font-size:12px;color:rgba(255,255,255,0.35);margin-top:-8px;margin-bottom:20px;padding:0 20px;line-height:1.6;';
+                note.innerHTML = 'Price and amount fields are masked for security. Hover to reveal. ' +
+                    'This verification was performed on ' + new Date().toLocaleString('en-GB') + '.';
+                contentEl.appendChild(note);
+            }
+
+            function showError(title, message) {
+                contentEl.innerHTML =
+                    '<div class="verify-error">' +
+                        '<i class="fas fa-exclamation-triangle"></i>' +
+                        '<h2>' + escapeHtml(title) + '</h2>' +
+                        '<p>' + escapeHtml(message) + '</p>' +
+                    '</div>';
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -76,21 +76,24 @@
                 <div class="card" style="margin-top:24px;">
                     <h3><i class="fas fa-key" style="color:var(--primary-green);"></i> Change Password</h3>
                     <div style="max-width:400px;">
-                        <div class="setting-field">
-                            <label>Current Password</label>
-                            <input type="password" id="currentPassword" placeholder="Enter current password" autocomplete="current-password">
-                        </div>
-                        <div class="setting-field">
-                            <label>New Password</label>
-                            <input type="password" id="newPassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password">
-                        </div>
-                        <div class="setting-field">
-                            <label>Confirm New Password</label>
-                            <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" minlength="6" autocomplete="new-password">
-                        </div>
-                        <div id="changePwError" style="color:#c62828;font-size:13px;margin-bottom:10px;display:none;"></div>
-                        <div id="changePwSuccess" style="color:#2e7d32;font-size:13px;margin-bottom:10px;display:none;">✓ Password changed successfully!</div>
-                        <button class="btn-green" onclick="changePassword()"><i class="fas fa-key"></i> Update Password</button>
+                        <form id="changePasswordForm" onsubmit="changePassword(); return false;">
+                            <input type="email" id="changePwEmail" autocomplete="username" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;" tabindex="-1" aria-hidden="true">
+                            <div class="setting-field">
+                                <label>Current Password</label>
+                                <input type="password" id="currentPassword" placeholder="Enter current password" autocomplete="current-password">
+                            </div>
+                            <div class="setting-field">
+                                <label>New Password</label>
+                                <input type="password" id="newPassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password">
+                            </div>
+                            <div class="setting-field">
+                                <label>Confirm New Password</label>
+                                <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" minlength="6" autocomplete="new-password">
+                            </div>
+                            <div id="changePwError" style="color:#c62828;font-size:13px;margin-bottom:10px;display:none;"></div>
+                            <div id="changePwSuccess" style="color:#2e7d32;font-size:13px;margin-bottom:10px;display:none;">✓ Password changed successfully!</div>
+                            <button type="submit" class="btn-green"><i class="fas fa-key"></i> Update Password</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -186,7 +189,7 @@
     </style>
     <script>
         (function initSettings() {
-            const const client = getSupabaseClient();
+            const client = getSupabaseClient();
             let currentUserEmail = '';
             const ADMIN_EMAIL = 'admin@nexwavex.com';
 
@@ -204,6 +207,9 @@
 
                     document.getElementById('profileName').value = user.user_metadata?.full_name || '';
                     document.getElementById('profileEmail').value = user.email || '';
+                    // Populate hidden email for Chrome accessibility (password form context)
+                    const pwEmailEl = document.getElementById('changePwEmail');
+                    if (pwEmailEl && user.email) pwEmailEl.value = user.email;
                     document.getElementById('profilePhone').value = user.phone || '';
                     document.getElementById('profileRole').value = user.user_metadata?.role || '';
 

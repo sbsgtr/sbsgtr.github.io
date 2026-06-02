@@ -587,6 +587,24 @@
             .about-chip strong { font-size: 18px; line-height: 1.1; }
             .about-chip span { font-size: 10px; }
         }
+
+        /* Smooth transitions for navigation items */
+        .nav-desktop a, .side-menu a, .side-menu div {
+            transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .nav-desktop a { max-width: 200px; }
+        .side-menu a, .side-menu div { max-height: 60px; }
+
+        .hidden-item {
+            max-width: 0 !important;
+            max-height: 0 !important;
+            opacity: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -604,7 +622,7 @@
 
     <nav class="nav-desktop">
         <a href="index.html">Home</a>
-        <a href="our_values.html">Our Values</a>
+        <a href="our_values.html">Values</a>
         <a href="who-we-are.html">Who We Are</a>
         <a href="what-we-do.html" class="active">What We Do</a>
         <a href="index.html#contact">Contact</a>
@@ -947,7 +965,6 @@
                 <li><a href="who-we-are.html">Who We Are</a></li>
                 <li><a href="what-we-do.html">What We Do</a></li>
                 <li><a href="login.html">Corporate Login</a></li>
-                <li><a href="countdown.html">Countdown</a></li>
                 <li><a href="../privacy.html">Privacy Policy</a></li>
                 <li><a href="../terms.html">Terms of Service</a></li>
             </ul>

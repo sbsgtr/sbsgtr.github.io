@@ -110,10 +110,14 @@
                     const { data: { user } } = await client.auth.getUser();
                     if (!user) return;
 
-                    const { data: invoices } = await client.from('invoices').select('*');
-                    const { data: estimates } = await client.from('estimates').select('*');
-                    const { data: products } = await client.from('products').select('*');
-                    const { data: customers } = await client.from('customers').select('*');
+                    const { data: invoices, error: invErr } = await client.from('invoices').select('*');
+                    if (invErr) console.warn('Invoices query:', invErr);
+                    const { data: estimates, error: estErr } = await client.from('estimates').select('*');
+                    if (estErr) console.warn('Estimates query:', estErr);
+                    const { data: products, error: prodErr } = await client.from('products').select('*');
+                    if (prodErr) console.warn('Products query:', prodErr);
+                    const { data: customers, error: custErr } = await client.from('customers').select('*');
+                    if (custErr) console.warn('Customers query:', custErr);
 
                     document.getElementById('kpiProducts').innerText = (products || []).length || 0;
                     document.getElementById('kpiCustomers').innerText = (customers || []).length || 0;

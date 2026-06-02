@@ -67,13 +67,6 @@ async function signOut() {
     window.location.href = '../pages/index.html';
 }
 
-/* ── Load ERP Header (dynamically) ── */
-function loadSidebar() {
-    // Sidebar is already static HTML in each page for simplicity
-    // This function is a placeholder for future dynamic loading
-    checkAuth();
-}
-
 // Auto-check auth on page load so user email shows in all ERP pages
 checkAuth();
 
@@ -318,11 +311,18 @@ function openPrintPreview(title, contentHtml) {
     overlay.id = 'printPreviewOverlay';
     overlay.innerHTML = `
         <div class="print-preview-container">
-            <div class="print-preview-header">
-                <h3><i class="fas fa-file-pdf"></i> ${escapeHtml(title)}</h3>
-                <div>
-                    <button class="btn-green" onclick="window.print()" style="margin-right:8px;"><i class="fas fa-print"></i> Print</button>
-                    <button class="btn-close" onclick="closePrintPreview()">&times;</button>
+            <div class="print-preview-header">                        <h3><i class="fas fa-file-pdf"></i> ${escapeHtml(title)}</h3>
+                <div class="print-preview-actions">
+                    <span class="paper-size-wrap">
+                        <select class="paper-size-select" onchange="setPaperSize(this.value)" title="Paper size">
+                            <option value="A4">A4</option>
+                            <option value="Letter">Letter</option>
+                            <option value="Legal">Legal</option>
+                        </select>
+                    </span>
+                    <button class="btn-ghost" onclick="downloadPDF()" title="Save as PDF — opens print dialog, choose 'Save as PDF' destination"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                    <button class="btn-green" onclick="window.print()" title="Print (Ctrl+P)"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn-close" onclick="closePrintPreview()" title="Close preview">&times;</button>
                 </div>
             </div>
             <div class="print-preview-body" id="printPreviewBody"></div>
@@ -332,31 +332,156 @@ function openPrintPreview(title, contentHtml) {
     document.getElementById('printPreviewBody').innerHTML = contentHtml;
     document.body.classList.add('print-preview-active');
     document.body.style.overflow = 'hidden';
-    preparePrintPagination();
+
+    // Sync the dropdown to the current paper size and apply preview dimensions
+    var sel = overlay.querySelector('.paper-size-select');
+    if (sel) sel.value = _currentPaperSize;
+    if (_currentPaperSize !== 'A4') {
+        setPaperSize(_currentPaperSize);
+    }
 
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closePrintPreview();
     });
+
+    // Apply the current paper size CSS class so CSS handles dimensions (not JS)
+    applyPaperSizeClass(_currentPaperSize);
+
+    // Generate QR codes for any invoice verification elements in the document
+    setTimeout(function() {
+        generatePrintQRs();
+    }, 50);
 }
 
-function preparePrintPagination() {
-    const doc = document.querySelector('#printPreviewBody .print-document');
-    if (!doc) return;
-    requestAnimationFrame(() => {
-        const pageHeightPx = (297 - 30) * (96 / 25.4);
-        if (doc.scrollHeight <= pageHeightPx * 1.08) {
-            doc.classList.add('single-page');
+/* ── Generate QR codes in the print document ── */
+function generatePrintQRs() {
+    var qrContainers = document.querySelectorAll('.doc-qr-code[data-id]');
+    if (qrContainers.length === 0) return;        // Load QR code library if not present
+    if (typeof qrcode_generator !== 'undefined') {
+        renderAllQRs(qrContainers);
+    } else if (typeof QRCode !== 'undefined') {
+        renderAllQRs(qrContainers);
+    } else {
+        var script = document.createElement('script');
+        // Try multiple CDN sources for reliability
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+        script.onload = function() { renderAllQRs(qrContainers); };
+        script.onerror = function() {
+            // Fallback: try another CDN source
+            var script2 = document.createElement('script');
+            script2.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+            script2.onload = function() { renderAllQRs(qrContainers); };
+            script2.onerror = function() { renderQRFallback(qrContainers); };
+            document.head.appendChild(script2);
+        };
+        document.head.appendChild(script);
+    }
+}
+
+function renderAllQRs(containers) {
+    var baseUrl = window.location.origin + '/pages/verify.html?id=';
+    containers.forEach(function(el) {
+        var invoiceId = el.getAttribute('data-id');
+        if (!invoiceId || el.querySelector('img, canvas')) return;
+        try {
+            var qr;
+            if (typeof qrcode_generator !== 'undefined') {
+                qr = qrcode_generator(0, 'L');
+                qr.addData(baseUrl + encodeURIComponent(invoiceId));
+                qr.make();
+                // Generate at high resolution for crisp rendering at 2cm display size
+                var imgData = qr.createDataURL(6, 0);
+                var img = document.createElement('img');
+                img.src = imgData;
+                img.alt = 'Verify Invoice';
+                img.style.cssText = 'width:100%;height:100%;display:block;';
+                el.appendChild(img);
+            } else if (typeof QRCode !== 'undefined') {
+                new QRCode(el, {
+                    text: baseUrl + encodeURIComponent(invoiceId),
+                    width: 100,
+                    height: 100,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.L
+                });
+            }
+        } catch(e) {
+            console.warn('QR generation error:', e);
         }
+    });
+}
+
+function renderQRFallback(containers) {
+    // If QR library fails to load, show a text link instead
+    var baseUrl = window.location.origin + '/pages/verify.html?id=';
+    containers.forEach(function(el) {
+        var invoiceId = el.getAttribute('data-id');
+        if (!invoiceId) return;
+        var link = document.createElement('a');
+        link.href = baseUrl + encodeURIComponent(invoiceId);
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.innerHTML = '<i class="fas fa-shield-alt"></i> Verify';
+        link.style.cssText = 'display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#2e7d32;text-decoration:none;padding:6px 10px;border:1px solid #2e7d32;border-radius:6px;';
+        el.appendChild(link);
     });
 }
 
 function closePrintPreview() {
     const el = document.getElementById('printPreviewOverlay');
-    if (el) el.remove();
+    if (el) {
+        el.remove();
+    }
     document.body.classList.remove('print-preview-active');
     document.body.style.overflow = '';
 }
 window.closePrintPreview = closePrintPreview;
+
+/* ── Paper Size Configuration ── */
+var _currentPaperSize = 'A4';
+
+function setPaperSize(size) {
+    if (!size) return;
+    _currentPaperSize = size;
+
+    // Update the @page rule for actual printing
+    // For non-A4 sizes we need to override the CSS baseline @page rule
+    var styleId = 'print-paper-size-style';
+    var styleEl = document.getElementById(styleId);
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+    }
+    if (size === 'A4') {
+        styleEl.textContent = '@media print { @page { size: A4 portrait; margin: 10mm; } }';
+    } else {
+        styleEl.textContent = '@media print { @page { size: ' + size + ' portrait; margin: 10mm; } }';
+    }
+}
+window.setPaperSize = setPaperSize;
+
+// Apply the paper size CSS class to the document so CSS can handle dimensions.
+// The base CSS rule already sets A4 (210mm x 297mm), so we only need to
+// add override classes for non-A4 sizes.
+function applyPaperSizeClass(size) {
+    var doc = document.querySelector('#printPreviewBody .print-document');
+    if (!doc) return;
+    doc.classList.remove('paper-letter', 'paper-legal');
+    if (size !== 'A4') {
+        doc.classList.add('paper-' + size.toLowerCase());
+    }
+}
+
+function downloadPDF() {
+    // Triggers the browser's print dialog, where the user can select
+    // "Save as PDF" as the destination. Works in Chrome, Edge, Firefox, Safari.
+    window.print();
+}
+window.downloadPDF = downloadPDF;
+
+
 
 function formatDocMoney(amount) {
     return 'LKR ' + parseFloat(amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -368,15 +493,14 @@ function formatDocDate(date) {
 }
 
 function buildPrintDoc(config) {
-    const { type, number, date, customer, items, totals, notes, footnotes, company, po_number } = config;
+    const { type, number, date, due_date, customer, items, totals, notes, footnotes, company, po_number, id } = config;
     const ref = number || '';
     const companyName = company?.company_name || 'NEXWAVE Solutions (Pvt) Ltd';
     const companyAddr = company?.address || 'Colombo, Sri Lanka';
     const companyPhone = company?.phone || '+94 11 234 5678';
     const companyEmail = company?.email || 'info@nexwave.lk';
-    const companyWeb = company?.website || 'www.nexwavex.com';
-    const companyInfo = company?.company_info || '';
-    const generalNote = company?.general_note || '';
+    const companyTax = company?.tax_number || '';
+    const taxRate = parseFloat(company?.default_tax) || 0;
 
     const typeLabel = type === 'estimate' ? 'ESTIMATE'
         : type === 'dn' ? 'DELIVERY NOTE'
@@ -387,140 +511,152 @@ function buildPrintDoc(config) {
 
     const lineItems = items || [];
     let itemsHtml = '';
-    if (lineItems.length > 0) {
-        lineItems.forEach((item, idx) => {
-            const desc = item.description || item.product_name || item.name || '';
-            const notesText = item.notes || '';
-            const qty = item.quantity || item.qty || 0;
-            const price = item.unit_price || item.price || 0;
-            const total = item.total || (qty * price) || 0;
-            if (isDn) {
-                itemsHtml += `<tr>
-                    <td class="col-num">${idx + 1}</td>
-                    <td class="col-desc">${escapeHtml(desc)}${notesText ? `<br><small>${escapeHtml(notesText)}</small>` : ''}</td>
-                    <td class="col-qty">${qty}</td>
-                </tr>`;
-            } else {
-                itemsHtml += `<tr>
-                    <td class="col-num">${idx + 1}</td>
-                    <td class="col-desc">${escapeHtml(desc)}${notesText ? `<br><small>${escapeHtml(notesText)}</small>` : ''}</td>
-                    <td class="col-qty">${qty}</td>
-                    <td class="col-price">${formatDocMoney(price)}</td>
-                    <td class="col-total">${formatDocMoney(total)}</td>
-                </tr>`;
-            }
-        });
-    }
+    lineItems.forEach((item) => {
+        const desc = item.description || item.product_name || item.name || 'Item';
+        const notesText = item.notes || '';
+        const qty = item.quantity || item.qty || 0;
+        const price = item.unit_price || item.price || 0;
+        const total = item.total || (qty * price) || 0;
+        const unit = item.unit || 'Unit';
+        
+        itemsHtml += `
+            <tr>
+              <td>
+                <div class="item-name">${escapeHtml(desc)}</div>
+                ${notesText ? `<div class="item-desc">${escapeHtml(notesText)}</div>` : ''}
+              </td>
+              <td class="r col-qty">${qty}</td>
+              <td class="r col-unit">${escapeHtml(unit)}</td>
+              ${isDn ? '<td class="r col-price" colspan="2">—</td>' : `
+              <td class="r col-price">${formatDocMoney(price)}</td>
+              <td class="r col-total">${formatDocMoney(total)}</td>`}
+            </tr>
+        `;
+    });
 
     const grandTotal = totals?.total || totals?.grand_total || lineItems.reduce((s, i) => s + (i.total || 0), 0);
-    const statusLabel = totals?.status ? String(totals.status).replace(/_/g, ' ').toUpperCase() : '';
-    const showStatus = type === 'invoice' || type === 'proforma';
-
-    const customerLines = [
-        customer?.contact_person || customer?.name ? `<strong>${escapeHtml(customer.contact_person || customer.name)}</strong>` : '',
-        customer?.company_name ? escapeHtml(customer.company_name) : '',
+    const vatAmount = grandTotal * (taxRate / 100);
+    const totalWithTax = grandTotal + vatAmount;
+    const customerName = customer?.company_name || customer?.contact_person || customer?.name || 'Client';
+    const customerDetails = [
         customer?.address ? escapeHtml(customer.address) : '',
         customer?.city ? escapeHtml(customer.city) : '',
-        customer?.contact_number ? `<i class="fas fa-phone"></i> ${escapeHtml(customer.contact_number)}` : '',
+        customer?.contact_person && customer?.company_name ? `Attn: ${escapeHtml(customer.contact_person)}` : '',
         customer?.email ? `<i class="fas fa-envelope"></i> ${escapeHtml(customer.email)}` : ''
     ].filter(Boolean).join('<br>');
-
-    const companyInfoHtml = companyInfo ? escapeHtml(companyInfo).replace(/\n/g, '<br>') : '';
-    const generalNoteHtml = generalNote ? escapeHtml(generalNote).replace(/\n/g, '<br>') : '';
 
     return `
         <div class="print-document" data-ref="${escapeHtml(ref)}">
             <header class="doc-header">
                 <div class="doc-brand">
                     <div class="doc-brand-top">
-                        <img class="doc-logo" src="../logo.png" alt="NEXWAVE">
-                        <div class="doc-brand-text"><span class="brand-nex">NEX</span><span class="brand-wave">WAVE</span></div>
+                        <span class="doc-brand-text"><span class="brand-nex">NEX</span><span class="brand-wave">WAVE</span></span>
                     </div>
-                    <div class="doc-company">
-                        <div class="doc-company-name">${escapeHtml(companyName)}</div>
-                        <div class="doc-company-addr">${escapeHtml(companyAddr)}</div>
-                        <div class="doc-contact-row">
-                            <span>${escapeHtml(companyWeb)}</span>
-                            <span class="doc-contact-sep">|</span>
-                            <span>${escapeHtml(companyEmail)}</span>
-                        </div>
-                        <div class="doc-contact-row">
-                            <span>${escapeHtml(companyPhone)}</span>
-                        </div>
-                        ${companyInfoHtml ? `<div class="doc-company-info">${companyInfoHtml}</div>` : ''}
+                    <div class="doc-company-name">${escapeHtml(companyName)}</div>
+                    <div class="doc-company-addr">
+                        ${companyAddr.replace(/\n/g, '<br>')}
+                    </div>
+                    <div class="doc-contact-row">
+                        <span>${escapeHtml(companyEmail)}</span>
+                        <span class="doc-contact-sep">|</span>
+                        <span>${escapeHtml(companyPhone)}</span>
+                        ${companyTax ? `<span class="doc-contact-sep">|</span><span>VAT: ${escapeHtml(companyTax)}</span>` : ''}
                     </div>
                 </div>
                 <div class="doc-meta">
                     <div class="doc-type-badge">${escapeHtml(typeLabel)}</div>
-                    <div class="doc-number">${escapeHtml(ref)}</div>
+                    <div class="doc-number">No. ${escapeHtml(ref)}</div>
                     <div class="doc-meta-grid">
-                        <span class="meta-label">Date</span>
-                        <span class="meta-value">${formatDocDate(date)}</span>
-                        ${customer?.contact_person || customer?.name ? `<span class="meta-label">Customer</span><span class="meta-value"><strong>${escapeHtml(customer.contact_person || customer.name)}</strong></span>` : ''}
-                        ${customer?.contact_number ? `<span class="meta-label">Phone</span><span class="meta-value"><i class="fas fa-phone"></i> ${escapeHtml(customer.contact_number)}</span>` : ''}
-                        ${type === 'invoice' && po_number ? `<span class="meta-label">PO No</span><span class="meta-value">${escapeHtml(po_number)}</span>` : ''}
-                        ${showStatus ? `<span class="meta-label">Status</span><span class="meta-value meta-status">${escapeHtml(statusLabel || 'PENDING')}</span>` : ''}
+                        <span class="meta-label">Date</span><span class="meta-value">${formatDocDate(date)}</span>
+                        <span class="meta-label">Due</span><span class="meta-value meta-status">${formatDocDate(due_date)}</span>
+                        <span class="meta-label">Ref</span><span class="meta-value">${escapeHtml(po_number || '—')}</span>
+                        <span class="meta-label">Currency</span><span class="meta-value">LKR</span>
+                        <span class="meta-label">Terms</span><span class="meta-value">${escapeHtml(footnotes || 'Net 30')}</span>
                     </div>
                 </div>
             </header>
 
             <div class="doc-parties">
                 <div class="doc-party">
-                    <div class="doc-party-label">Bill To</div>
-                    <div class="doc-party-body">${customerLines || '—'}</div>
-                </div>
-                <div class="doc-party doc-party-ref">
-                    <div class="doc-party-label">Reference</div>
+                    <div class="doc-party-label">From</div>
                     <div class="doc-party-body">
-                        <strong>${escapeHtml(ref)}</strong><br>
-                        Document Type: ${escapeHtml(typeLabel)}
+                        <strong>${escapeHtml(companyName)}</strong><br>
+                        ${companyAddr.replace(/\n/g, '<br>')}<br>
+                        ${escapeHtml(companyEmail)}
+                    </div>
+                </div>
+                <div class="doc-party${!customer?.email && !customer?.address ? ' doc-party-ref' : ''}">
+                    <div class="doc-party-label">Bill To</div>
+                    <div class="doc-party-body">
+                        <strong>${escapeHtml(customerName)}</strong><br>
+                        ${customerDetails.replace(/<br>/g, '<br>')}
                     </div>
                 </div>
             </div>
 
-            <table class="doc-items${isDn ? ' doc-items-dn' : ''}">
-                <thead>
-                    <tr>
-                        <th class="col-num">#</th>
-                        <th class="col-desc${isDn ? ' col-desc-dn' : ''}">Description</th>
-                        <th class="col-qty">${isDn ? 'Qty' : 'Qty'}</th>
-                        ${isDn ? '' : '<th class="col-price">Unit Price</th>'}
-                        ${isDn ? '' : '<th class="col-total">Amount</th>'}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itemsHtml || `<tr><td colspan="${isDn ? 3 : 5}" class="doc-empty">No items</td></tr>`}
-                </tbody>
-            </table>
+            <div class="items-section">
+                <table class="doc-items">
+                    <thead>
+                        <tr>
+                            <th style="width:44%">Description</th>
+                            <th class="col-qty" style="width:10%">Qty</th>
+                            <th class="col-unit" style="width:12%">Unit</th>
+                            <th class="col-price" style="width:16%">Rate</th>
+                            <th class="col-total" style="width:18%">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml || `<tr><td colspan="5" class="doc-empty">No items recorded</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
 
-            ${isDn ? '' : `
             <div class="doc-totals-wrap">
                 <div class="doc-totals">
-                    <div class="doc-total-row">
-                        <span>Subtotal</span>
-                        <span>${formatDocMoney(grandTotal)}</span>
-                    </div>
-                    <div class="doc-total-row doc-grand-total">
-                        <span>Grand Total</span>
-                        <span>${formatDocMoney(grandTotal)}</span>
+                    <div class="doc-total-row"><span>Subtotal</span><span>${formatDocMoney(grandTotal)}</span></div>
+                    ${taxRate > 0 ? `<div class="doc-total-row" style="font-size:8pt;color:#888;"><span>VAT (${taxRate}%)</span><span>${formatDocMoney(vatAmount)}</span></div>` : ''}
+                    <div class="doc-grand-total">
+                        <span>Total Due</span>
+                        <span>${formatDocMoney(totalWithTax)}</span>
                     </div>
                 </div>
-            </div>`}
+            </div>
 
-            ${notes ? `<div class="doc-notes"><strong>Notes</strong><p>${escapeHtml(notes)}</p></div>` : ''}
+            <div class="doc-notes">
+                <strong>Bank Details</strong>
+                <p>${company?.bank_details ? escapeHtml(company.bank_details).replace(/\n/g, '<br>') : 'Commercial Bank PLC · Branch: Siddamulla · Account: 1000234567'}</p>
+            </div>
 
-            <div class="doc-signatory">
-                <div class="doc-sign-line"></div>
-                <span>Authorized Signature</span>
+            <div class="doc-general-note">
+                <strong>Notes</strong>
+                <p>${notes ? escapeHtml(notes).replace(/\n/g, '<br>') : 'Thank you for your business. Please make payment by the due date.'}</p>
             </div>
 
             <hr class="doc-footer-divider">
-            ${footnotes ? `<div class="doc-general-note"><strong>Payment Terms</strong><p>${escapeHtml(footnotes)}</p></div>` : ''}
-            ${footnotes && generalNoteHtml ? '<hr class="doc-footer-divider">' : ''}
-            ${generalNoteHtml ? `<div class="doc-general-note"><strong>General Note</strong><p>${generalNoteHtml}</p></div>` : ''}
 
+            <div class="doc-signatory">
+                ${id && (type === 'invoice' || type === 'proforma' || type === 'estimate') ? `
+                <div class="doc-qr-signature-wrap">
+                    <div class="doc-qr-code" id="qr-${escapeHtml(id)}" data-id="${escapeHtml(id)}"></div>
+                    <div class="doc-qr-signature-text">System Generated Document<br>Scan to verify</div>
+                </div>
+                ` : `
+                <div class="doc-sign-line"></div>
+                Authorized Signature<br>
+                <small>${escapeHtml(companyName)}</small>
+                `}
+            </div>
+
+            <div class="doc-company-info">
+                ${escapeHtml(companyName)} · Engineering precision turnkey solutions ${companyTax ? '· ' + escapeHtml(companyTax) : ''} · ${escapeHtml(companyEmail)}
+            </div>
+
+            <!-- Static page footer — shown on every printed page via position:fixed in @media print -->
             <div class="print-page-footer">
-                <span class="print-footer-ref">${escapeHtml(ref)}</span><span class="print-footer-pages"></span>
+                <div class="print-footer-content">
+                    <span class="print-footer-ref">${escapeHtml(companyName)}</span>
+                    <span class="print-footer-pages">Page</span>
+                </div>
             </div>
         </div>
     `;
@@ -535,7 +671,7 @@ function switchTab(tabGroup, tabName) {
         el.classList.remove('active');
     });
     const section = document.querySelector(`.tab-section[data-group="${tabGroup}"][data-tab="${tabName}"]`);
-    if (section) section.classList.add('active');
     const btn = document.querySelector(`.tab-btn[data-group="${tabGroup}"][data-tab="${tabName}"]`);
+    if (section) section.classList.add('active');
     if (btn) btn.classList.add('active');
 }

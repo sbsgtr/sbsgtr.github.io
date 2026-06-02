@@ -190,7 +190,7 @@
     <script src="../shared/js/erp.js"></script>
     <script>
         (function initEstInv() {
-            const const client = getSupabaseClient();
+            const client = getSupabaseClient();
             let customerMap = {};
             let currentUserEmail = '';
             const ADMIN_EMAIL = 'admin@nexwavex.com';
@@ -517,7 +517,8 @@
                     notes: '',
                     footnotes: 'Payment Terms: ' + (est.payment_terms || 'Net 30') + (est.po_number ? ' | PO: ' + est.po_number : ''),
                     company,
-                    po_number: est.po_number || ''
+                    po_number: est.po_number || '',
+                    id: est.id  // Pass estimate UUID for QR verification link
                 };
             }
 
@@ -544,7 +545,8 @@
                     notes: '',
                     footnotes: '',
                     company,
-                    po_number: inv.po_number || ''
+                    po_number: inv.po_number || '',
+                    id: inv.id  // Pass invoice UUID for QR verification link
                 };
             }
 

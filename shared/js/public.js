@@ -141,8 +141,8 @@ const NEXWAVE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
             || null;
 
         const emailBox = document.getElementById('userEmail');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginBtnD = document.getElementById('loginBtnDesktop');
+        const loginSideBtn = document.getElementById('loginSideBtn') || document.getElementById('loginBtn');
+        const loginBtnDesktop = document.getElementById('loginBtnDesktop');
         const signOutBtn = document.getElementById('signOutBtn');
         const erpLink = document.getElementById('erpLink');
         const erpLinkD = document.getElementById('erpLinkDesktop');
@@ -155,6 +155,26 @@ const NEXWAVE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         const userInitials = document.getElementById('userInitials');
         const userEmailSub = document.getElementById('userEmailSub');
 
+        // Helper to smoothly show/hide elements by toggling a class and managing display property
+        function toggleSmoothly(element, show, isFlex = false) {
+            if (!element) return;
+            if (show) {
+                element.style.display = isFlex ? (element.tagName === 'A' ? 'flex' : 'flex') : (element.tagName === 'A' ? 'inline-block' : 'block');
+                // Force reflow to apply display before transition
+                element.offsetHeight;
+                element.classList.remove('hidden-item');
+            } else {
+                element.classList.add('hidden-item');
+                // Listen for transition end to set display: none
+                element.addEventListener('transitionend', function handler() {
+                    if (element.classList.contains('hidden-item')) {
+                        element.style.display = 'none';
+                    }
+                    element.removeEventListener('transitionend', handler);
+                }, { once: true });
+            }
+        }
+
         if (session?.user) {
             const displayName = window.__userName || 'User';
             if (emailBox) emailBox.innerText = session.user.email;
@@ -162,30 +182,33 @@ const NEXWAVE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
             if (userName) userName.innerText = displayName;
             if (userInitials) userInitials.innerText = displayName.charAt(0).toUpperCase();
             if (userEmailSub) userEmailSub.innerText = session.user.email;
-            if (loginBtn) loginBtn.style.display = window.__isAdmin ? 'flex' : 'none';
-            if (loginBtnD) loginBtnD.style.display = window.__isAdmin ? 'block' : 'none';
-            if (signOutBtn) signOutBtn.style.display = 'flex';
-            if (erpLink) erpLink.style.display = window.__isAdmin ? 'flex' : 'none';
-            if (erpLinkD) erpLinkD.style.display = window.__isAdmin ? 'block' : 'none';
-            if (publicGoogleBtn) publicGoogleBtn.style.display = 'none';
-            if (publicGithubBtn) publicGithubBtn.style.display = 'none';
-            if (publicSignInSep) publicSignInSep.style.display = 'none';
-            if (newsletterLink) newsletterLink.style.display = 'flex';
+
+            toggleSmoothly(loginSideBtn, false, true);
+            toggleSmoothly(loginBtnDesktop, false);
+            toggleSmoothly(signOutBtn, true, true);
+            toggleSmoothly(erpLink, window.__isAdmin, true);
+            toggleSmoothly(erpLinkD, window.__isAdmin);
+            toggleSmoothly(publicGoogleBtn, false, true);
+            toggleSmoothly(publicGithubBtn, false, true);
+            toggleSmoothly(publicSignInSep, false);
+            toggleSmoothly(newsletterLink, true, true);
+            toggleSmoothly(userAvatar, true, true);
         } else {
             if (emailBox) emailBox.innerText = '';
-            if (userAvatar) userAvatar.style.display = 'none';
             if (userName) userName.innerText = '';
             if (userInitials) userInitials.innerText = '';
             if (userEmailSub) userEmailSub.innerText = '';
-            if (loginBtn) loginBtn.style.display = 'flex';
-            if (loginBtnD) loginBtnD.style.display = 'block';
-            if (signOutBtn) signOutBtn.style.display = 'none';
-            if (erpLink) erpLink.style.display = 'none';
-            if (erpLinkD) erpLinkD.style.display = 'none';
-            if (publicGoogleBtn) publicGoogleBtn.style.display = 'flex';
-            if (publicGithubBtn) publicGithubBtn.style.display = 'flex';
-            if (publicSignInSep) publicSignInSep.style.display = 'block';
-            if (newsletterLink) newsletterLink.style.display = 'none';
+
+            toggleSmoothly(loginSideBtn, true, true);
+            toggleSmoothly(loginBtnDesktop, true);
+            toggleSmoothly(signOutBtn, false, true);
+            toggleSmoothly(erpLink, false, true);
+            toggleSmoothly(erpLinkD, false);
+            toggleSmoothly(publicGoogleBtn, true, true);
+            toggleSmoothly(publicGithubBtn, true, true);
+            toggleSmoothly(publicSignInSep, true);
+            toggleSmoothly(newsletterLink, false, true);
+            toggleSmoothly(userAvatar, false, true);
         }
     }
 
@@ -346,33 +369,30 @@ RULES:
             if (!container) return;
             container.innerHTML = '';
 
-            // Use auth identity if available for personalized greeting
-            const authName = getVisitorName();
-            const userName = authName || (data.userInfo && data.userInfo.name);
-
-            if (userName) {
-                const companyNote = data.userInfo && data.userInfo.company ? ` from ${data.userInfo.company}` : '';
-                const welcomeDiv = document.createElement('div');
-                welcomeDiv.className = 'msg ai';
-                container.appendChild(welcomeDiv);
-                setTimeout(() => typeMessage(welcomeDiv, `👋 Welcome back${companyNote}, ${userName}! How can I help you today?`), 300);
-            } else {
-                // First time — standard greeting
-                const welcomeDiv = document.createElement('div');
-                welcomeDiv.className = 'msg ai';
-                container.appendChild(welcomeDiv);
-                setTimeout(() => typeMessage(welcomeDiv, "Hello! 👋 I'm NEXi from NEXWAVE Solutions. May I know your name please?"), 300);
-            }
-
             if (data.history && data.history.length > 0) {
                 nexwaveHistory = data.history;
-                data.history.forEach(msg => {
+                data.history.forEach((msg, idx) => {
                     const div = document.createElement('div');
                     div.className = 'msg ' + (msg.role === 'user' ? 'user' : 'ai');
-                    div.innerText = msg.content;
-                    container.appendChild(div);
+
+                    // Apply typing effect only to the first message if it's a brand new session
+                    if (data.history.length === 1 && idx === 0 && msg.role === 'assistant') {
+                        container.appendChild(div);
+                        setTimeout(() => typeMessage(div, msg.content), 300);
+                    } else {
+                        div.innerText = msg.content;
+                        container.appendChild(div);
+                    }
                 });
                 container.scrollTop = container.scrollHeight;
+            } else {
+                // Fallback if no history exists: show standard greeting
+                const authName = getVisitorName();
+                const div = document.createElement('div');
+                div.className = 'msg ai';
+                container.appendChild(div);
+                const text = authName ? `👋 Hi ${authName}! I'm NEXi. How can I help you today?` : "Hello! 👋 I'm NEXi from NEXWAVE Solutions. May I know your name please?";
+                setTimeout(() => typeMessage(div, text), 300);
             }
         } catch (err) {
             console.warn("Could not load chat history:", err);

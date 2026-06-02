@@ -53,7 +53,9 @@
             email: 'info@nexwavex.com',
             website: 'www.nexwavex.com',
             company_info: 'Payment Terms: Net 30',
-            general_note: 'Thank you for your business! Please make payment within 30 days.'
+            general_note: 'Thank you for your business! Please make payment within 30 days.',
+            default_tax: 8,            // 8% VAT for testing
+            tax_number: 'TIN-98765-LK'
         };
 
         const sampleCustomer = {
@@ -82,6 +84,10 @@
                     : type === 'dn' ? 'DN-24B8E9F0D2'
                     : type === 'proforma' ? 'PF-24C5D6E7F8'
                     : 'INV-24D1E2F3G4',
+                id: type === 'invoice' ? 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+                    : type === 'proforma' ? 'f0e9d8c7-b6a5-4321-0987-6543210fedcb'
+                    : type === 'estimate' ? 'b1c2d3e4-f5a6-7890-bcde-f123456789ab'
+                    : null,
                 date: '2026-05-31',
                 customer: type === 'dn' ? { contact_person: 'Jane Smith', company_name: 'GlobalTrade Services' } : sampleCustomer,
                 items: sampleItems,
@@ -93,6 +99,8 @@
             };
             const html = buildPrintDoc(config);
             document.getElementById('previewBody').innerHTML = html;
+            // Generate QR codes after DOM insertion
+            setTimeout(function() { generatePrintQRs(); }, 100);
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }

@@ -10,3 +10,18 @@ Thumbs.db
 
 # IDE
 .vscode/settings.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Temp / debug artifacts
+server.log
+nul
+debug-qr-test.html
+
+# Supabase CLI temp state
+supabase/.temp/
+
+# Dev server (optional — uncomment if you prefer not to commit)
+# dev_server.py

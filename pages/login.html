@@ -44,6 +44,35 @@
             .login-card h2 { font-size: 24px; }
         }
     </style>
+    <style>
+        /* Smooth transition for menu items when visibility changes */
+        .nav-desktop a,
+        .side-menu a,
+        .side-menu div {
+            transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
+            overflow: hidden;
+            /* Set a default max-height that is slightly larger than the actual height to allow smooth collapse */
+            max-height: 50px; /* Adjust this value based on your actual menu item height */
+            opacity: 1;
+            /* Ensure padding and margin are part of the transition for smooth collapse */
+            padding-top: 12px; /* Example, adjust to actual padding */
+            padding-bottom: 12px; /* Example, adjust to actual padding */
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        .nav-desktop a { max-width: 200px; }
+        .nav-desktop a.hidden-item,
+        .side-menu a.hidden-item,
+        .side-menu div.hidden-item {
+            max-width: 0;
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="cursor" id="cursor"></div>
@@ -64,13 +93,13 @@
         <a href="what-we-do.html"><i class="fas fa-cogs"></i> What We Do</a>
         <a href="our_values.html"><i class="fas fa-heart"></i> Values</a>
         <a href="index.html#contact"><i class="fas fa-envelope"></i> Contact</a>
-        <a href="login.html" id="loginBtn" style="display:none;"><i class="fas fa-lock"></i> Login</a>
+        <a href="login.html" id="loginSideBtn"><i class="fas fa-lock"></i> Login</a>
         <div id="userEmail"></div>
         <div id="publicSignInSep" style="border-top:1px solid rgba(255,255,255,0.08);margin:8px 30px;padding-top:8px;"></div>
         <a id="publicGoogleBtn" href="#" onclick="signInWithPublicGoogle(); return false;"><i class="fab fa-google"></i> Sign in with Google</a>
         <a id="publicGithubBtn" href="#" onclick="signInWithPublicGithub(); return false;"><i class="fab fa-github"></i> Sign in with GitHub</a>
-        <a id="newsletterLink" href="#" onclick="alert('Subscribe to our newsletter for updates!'); return false;" style="display:none;"><i class="fas fa-envelope"></i> Subscribe to Newsletter</a>
-        <div id="userAvatar" style="display:none;align-items:center;gap:10px;padding:12px 30px;border-top:1px solid rgba(255,255,255,0.05);margin-top:8px;">
+        <a id="newsletterLink" href="#" onclick="alert('Subscribe to our newsletter for updates!'); return false;"><i class="fas fa-envelope"></i> Subscribe to Newsletter</a>
+        <div id="userAvatar" style="align-items:center;gap:10px;padding:12px 30px;border-top:1px solid rgba(255,255,255,0.05);margin-top:8px;">
             <div style="width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;color:var(--green-deep);font-weight:600;font-size:13px;flex-shrink:0;" id="userInitials"></div>
             <div style="flex:1;">
                 <div style="font-size:13px;color:var(--white);font-weight:500;" id="userName"></div>
@@ -89,7 +118,7 @@
             <div style="text-align:right;margin-top:-8px;margin-bottom:14px;">
                 <a href="#" onclick="showForgotPassword(); return false;" style="color:var(--lime);font-size:12px;text-decoration:none;font-weight:500;">Forgot Password?</a>
             </div>
-            <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-arrow-right"></i> Sign In</button>
+            <button type="submit" class="login-btn" id="loginSubmitBtn"><i class="fas fa-arrow-right"></i> Sign In</button>
             <div class="login-error" id="loginError">Invalid email or password.</div>
             <div class="login-loading" id="loginLoading"><i class="fas fa-spinner"></i> Signing in...</div>
         </form>
@@ -97,8 +126,10 @@
         <!-- Forgot Password Form (hidden by default) -->
         <div id="forgotPasswordForm" style="display:none;">
             <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;">Enter your email address and we'll send you a link to reset your password.</p>
-            <input type="email" class="login-input" id="forgotEmailInput" placeholder="Email address" required autocomplete="email">
-            <button type="button" class="login-btn" id="forgotPwBtn" onclick="sendPasswordReset()"><i class="fas fa-paper-plane"></i> Send Reset Link</button>
+            <form id="forgotPasswordFormInner" onsubmit="sendPasswordReset(); return false;">
+                <input type="email" class="login-input" id="forgotEmailInput" placeholder="Email address" required autocomplete="email">
+                <button type="submit" class="login-btn" id="forgotPwBtn"><i class="fas fa-paper-plane"></i> Send Reset Link</button>
+            </form>
             <div class="login-success" id="forgotSuccess" style="display:none;">✓ Reset link sent! Check your email.</div>
             <div class="login-error" id="forgotError" style="display:none;"></div>
             <div class="login-loading" id="forgotLoading" style="display:none;"><i class="fas fa-spinner"></i> Sending...</div>
@@ -108,9 +139,12 @@
         <!-- Reset Password Form (shown on recovery redirect) -->
         <div id="resetPasswordForm" style="display:none;">
             <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;">Choose a new password for your account.</p>
-            <input type="password" class="login-input" id="newPasswordInput" placeholder="New password" required minlength="6" autocomplete="new-password">
-            <input type="password" class="login-input" id="confirmPasswordInput" placeholder="Confirm new password" required minlength="6" autocomplete="new-password">
-            <button type="button" class="login-btn" id="resetPwBtn" onclick="updatePassword()"><i class="fas fa-key"></i> Update Password</button>
+            <form id="resetPasswordFormInner" onsubmit="updatePassword(); return false;">
+                <input type="email" id="resetEmailInput" autocomplete="username" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;" tabindex="-1" aria-hidden="true">
+                <input type="password" class="login-input" id="newPasswordInput" placeholder="New password" required minlength="6" autocomplete="new-password">
+                <input type="password" class="login-input" id="confirmPasswordInput" placeholder="Confirm new password" required minlength="6" autocomplete="new-password">
+                <button type="submit" class="login-btn" id="resetPwBtn"><i class="fas fa-key"></i> Update Password</button>
+            </form>
             <div class="login-success" id="resetSuccess" style="display:none;">✓ Password updated successfully!</div>
             <div class="login-error" id="resetError" style="display:none;"></div>
             <div class="login-loading" id="resetLoading" style="display:none;"><i class="fas fa-spinner"></i> Updating...</div>
@@ -147,27 +181,50 @@
                 const form = document.getElementById('loginForm');
                 const errorEl = document.getElementById('loginError');
                 const loadingEl = document.getElementById('loginLoading');
-                const btn = document.getElementById('loginBtn');
+                const btn = document.getElementById('loginSubmitBtn');
 
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     errorEl.style.display = 'none';
                     loadingEl.style.display = 'block';
-                    btn.disabled = true;
+                    if (btn) btn.disabled = true;
 
                     try {
                         const email = document.getElementById('emailInput').value;
                         const password = document.getElementById('passwordInput').value;
 
-                        const { error } = await client.auth.signInWithPassword({ email, password });
-                        if (error) throw new Error(error.message);
+                        const { data: authData, error: authError } = await client.auth.signInWithPassword({ email, password });
+                        if (authError) throw authError;
+
+                        // Verify if user is an admin before redirecting
+                        const { data: adminCheck, error: adminError } = await client.from('admin_users')
+                            .select('id')
+                            .eq('email', authData.user.email)
+                            .maybeSingle();
+                        
+                        if (adminError) {
+                            console.error('Admin check error:', adminError);
+                            throw new Error('Database verification failed. Please try again.');
+                        }
+
+                        if (!adminCheck) {
+                            // Not an admin - sign them out and show error
+                            loadingEl.style.display = 'none';
+                            if (btn) btn.disabled = false;
+                            await client.auth.signOut().catch(() => {});
+                            throw new Error('Access Denied: Your account is not authorized to access the ERP dashboard.');
+                        }
+
+                        // Login successful, clear loading state before redirect
+                        loadingEl.style.display = 'none';
+                        btn.disabled = false;
 
                         // Auth succeeded — redirect to ERP dashboard.
                         // erp.js checkAuth() will verify admin access on every ERP page.
                         window.location.href = '../erp/corporate.html';
                     } catch (err) {
                         loadingEl.style.display = 'none';
-                        btn.disabled = false;
+                        if (btn) btn.disabled = false;
                         errorEl.innerText = err.message || 'Invalid email or password.';
                         errorEl.style.display = 'block';
                     }
@@ -268,6 +325,15 @@
                 document.getElementById('forgotPasswordForm').style.display = 'none';
                 document.getElementById('resetPasswordForm').style.display = 'block';
                 document.querySelector('.login-sub').innerText = 'Reset your password';
+
+                // Populate hidden email field for Chrome accessibility (password form context)
+                if (window.nexwaveClient) {
+                    window.nexwaveClient.auth.getUser().then(({ data: { user } }) => {
+                        if (user?.email) {
+                            document.getElementById('resetEmailInput').value = user.email;
+                        }
+                    }).catch(() => {});
+                }
             }
 
             (function checkRecoveryMode() {

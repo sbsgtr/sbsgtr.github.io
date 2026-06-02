@@ -82,7 +82,7 @@ header.scrolled { background: rgba(7, 26, 9, 0.95); }
     color: var(--muted);
     text-decoration: none;
     border-radius: 6px;
-    transition: color 0.2s, background 0.2s;
+    transition: color 0.2s, background 0.2s, opacity 0.25s ease, visibility 0.25s ease;
     letter-spacing: 0.02em;
 }
 .nav-desktop a:hover { color: var(--white); background: rgba(255,255,255,0.06); }
@@ -129,7 +129,7 @@ header.scrolled { background: rgba(7, 26, 9, 0.95); }
     font-size: 15px;
     font-weight: 500;
     display: flex; align-items: center; gap: 12px;
-    transition: color 0.2s, padding-left 0.2s;
+    transition: color 0.2s, padding-left 0.2s, opacity 0.25s ease, visibility 0.25s ease;
     border-left: 2px solid transparent;
 }
 .side-menu a:hover { color: var(--white); padding-left: 36px; border-left-color: var(--lime); }
@@ -525,6 +525,26 @@ footer {
 @keyframes shieldGlow {
     0% { box-shadow: 0 0 8px rgba(181,245,66,0.5); }
     100% { box-shadow: 0 0 18px rgba(181,245,66,1); }
+}
+
+/* ── SMOOTH TOGGLE (Auth UI) ── */
+.hidden-item {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Elements that use toggleSmoothly for auth UI transitions */
+.side-menu a,
+.nav-desktop a,
+#userAvatar,
+#publicSignInSep,
+#newsletterLink,
+#userEmailSub,
+#userName,
+#userInitials,
+#userEmail {
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 /* ── REVEAL ANIMATION ── */

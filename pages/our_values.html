@@ -27,6 +27,24 @@
         .commitment-item h4 { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
         .commitment-item p { font-size: 13px; color: var(--muted); line-height: 1.6; }
         @media (max-width: 600px) { .commitment-grid { grid-template-columns: 1fr; } }
+
+        /* Smooth transitions for navigation items */
+        .nav-desktop a, .side-menu a, .side-menu div {
+            transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .nav-desktop a { max-width: 200px; }
+        .side-menu a, .side-menu div { max-height: 60px; }
+
+        .hidden-item {
+            max-width: 0 !important;
+            max-height: 0 !important;
+            opacity: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -155,7 +173,7 @@
 
     <div class="chat-widget">
         <div class="chat-box" id="chatBox"><div class="chat-header"><span style="display:flex;align-items:center;gap:8px;font-weight:600;color:#fff;"><i class="fas fa-robot" style="color:var(--lime);"></i> NEXi</span><span onclick="toggleChat()" style="cursor:pointer;color:rgba(255,255,255,0.5);font-size:18px;">&times;</span></div>
-            <div class="chat-messages" id="chatMessages"><div class="msg ai">Hello! 👋 I'm NEXi from NEXWAVE Solutions. May I know your name please?</div></div>
+            <div class="chat-messages" id="chatMessages"></div>
             <div class="chat-input-wrap"><input type="text" id="chatInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendChatMessage()"><span onclick="sendChatMessage()" style="cursor:pointer;color:var(--lime);font-size:18px;"><i class="fas fa-paper-plane"></i></span></div>
         </div>
         <div class="chat-btn" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
