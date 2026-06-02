@@ -482,36 +482,31 @@
 
             async function loadDocument(id) {
                 try {
-                    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                    // ── Query both invoices and estimates in parallel ──
+                    const [invResult, estResult] = await Promise.all([
+                        client.from('invoices').select('*').eq('invoice_number', id).maybeSingle(),
+                        client.from('estimates').select('*').eq('estimate_number', id).maybeSingle()
+                    ]);
 
-                    // Try invoices table first, then estimates table
+                    // Determine which table matched
                     let doc, docType, customer;
+                    if (invResult.data) {
+                        doc = invResult.data;
+                        docType = 'invoice';
+                    } else if (estResult.data) {
+                        doc = estResult.data;
+                        docType = 'estimate';
+                    }
 
-                    if (uuidPattern.test(id)) {
-                        // Attempt 1: invoices table by UUID
-                        let { data, error } = await client.from('invoices').select('*').eq('id', id).maybeSingle();
-                        if (data) { doc = data; docType = 'invoice'; }
-                        if (error) throw error;
-
-                        // Attempt 2: estimates table by UUID
-                        if (!doc) {
-                            let estData, estError;
-                            ({ data: estData, error: estError } = await client.from('estimates').select('*').eq('id', id).maybeSingle());
-                            if (estData) { doc = estData; docType = 'estimate'; }
-                            if (estError) throw estError;
-                        }
-                    } else {
-                        // Treat id as invoice_number or estimate_number
-                        let { data, error } = await client.from('invoices').select('*').eq('invoice_number', id).maybeSingle();
-                        if (data) { doc = data; docType = 'invoice'; }
-                        if (error) throw error;
-
-                        if (!doc) {
-                            let estData, estError;
-                            ({ data: estData, error: estError } = await client.from('estimates').select('*').eq('estimate_number', id).maybeSingle());
-                            if (estData) { doc = estData; docType = 'estimate'; }
-                            if (estError) throw estError;
-                        }
+                    // Also try by UUID if numeric/ID query failed
+                    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                    if (!doc && uuidPattern.test(id)) {
+                        const [invUuid, estUuid] = await Promise.all([
+                            client.from('invoices').select('*').eq('id', id).maybeSingle(),
+                            client.from('estimates').select('*').eq('id', id).maybeSingle()
+                        ]);
+                        if (invUuid.data) { doc = invUuid.data; docType = 'invoice'; }
+                        else if (estUuid.data) { doc = estUuid.data; docType = 'estimate'; }
                     }
 
                     if (!doc) {
@@ -519,41 +514,48 @@
                         return;
                     }
 
-                    // ── Fetch customer details ──
+                    // ── Fetch customer + items in parallel ──
+                    let customer, items = [];
+                    const promises = [];
+
                     if (doc.customer_id) {
-                        const { data: cData } = await client
-                            .from('customers')
-                            .select('contact_person, company_name, address, city, email')
-                            .eq('id', doc.customer_id)
-                            .maybeSingle();
-                        customer = cData;
+                        promises.push(
+                            client.from('customers')
+                                .select('contact_person, company_name, address, city, email')
+                                .eq('id', doc.customer_id)
+                                .maybeSingle()
+                                .then(function(r) { customer = r.data; })
+                        );
                     }
 
-                    // ── Parse or fetch items ──
-                    let items = [];
                     if (docType === 'invoice') {
-                        // items stored as JSONB
+                        // items stored as JSONB directly on invoice
                         if (doc.items && typeof doc.items === 'string') {
                             try { doc.items = JSON.parse(doc.items); } catch (e) { doc.items = []; }
                         }
                         if (Array.isArray(doc.items)) items = doc.items;
                     } else {
                         // estimate — items in separate estimate_items table
-                        const { data: estItems } = await client
-                            .from('estimate_items')
-                            .select('*')
-                            .eq('estimate_number', doc.estimate_number);
-                        if (estItems) {
-                            items = estItems.map(function(i) {
-                                return {
-                                    description: i.product_name || '',
-                                    quantity: i.qty || 0,
-                                    unit_price: i.price || 0,
-                                    total: i.total || 0
-                                };
-                            });
-                        }
+                        promises.push(
+                            client.from('estimate_items')
+                                .select('product_name, qty, price, total')
+                                .eq('estimate_number', doc.estimate_number)
+                                .then(function(r) {
+                                    if (r.data) {
+                                        items = r.data.map(function(i) {
+                                            return {
+                                                description: i.product_name || '',
+                                                quantity: i.qty || 0,
+                                                unit_price: i.price || 0,
+                                                total: i.total || 0
+                                            };
+                                        });
+                                    }
+                                })
+                        );
                     }
+
+                    await Promise.all(promises);
 
                     // Render the document
                     renderDocument(doc, docType, customer, items);
