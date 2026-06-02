@@ -116,7 +116,8 @@
                 } catch (err) {
                     console.warn('Products load failed:', err);
                     productsCache = [];
-                    document.getElementById('productsTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load products. Please run the database migration first.</td></tr>';
+                    document.getElementById('productsTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load products. ' + escapeHtml(err.message || err) + '</td></tr>';
+                    return;
                 }
                 renderProducts();
             }

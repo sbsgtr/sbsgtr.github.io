@@ -105,7 +105,8 @@
                 } catch (err) {
                     console.warn('Customers load failed:', err);
                     customersCache = [];
-                    document.getElementById('customersTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load customers. Please run the database migration first.</td></tr>';
+                    document.getElementById('customersTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Could not load customers. ' + escapeHtml(err.message || err) + '</td></tr>';
+                    return;
                 }
                 renderCustomers();
             }
