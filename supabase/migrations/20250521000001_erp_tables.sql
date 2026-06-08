@@ -76,13 +76,18 @@ ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
 /* ── RLS Policies: allow all authenticated users ── */
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON products;
 CREATE POLICY "Enable all for authenticated users" ON products
     FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON customers;
 CREATE POLICY "Enable all for authenticated users" ON customers
     FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON company_settings;
 CREATE POLICY "Enable all for authenticated users" ON company_settings
     FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON team_members;
 CREATE POLICY "Enable all for authenticated users" ON team_members
     FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON projects;
 CREATE POLICY "Enable all for authenticated users" ON projects
     FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');

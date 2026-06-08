@@ -4,10 +4,17 @@
   "private": true,
   "description": "NEXWAVE ERP - Supabase CRUD utility scripts",
   "scripts": {
-    "crud": "node scripts/supabase-crud.js"
+    "crud": "node scripts/supabase-crud.js",
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:report": "npx playwright show-report test-results/html-report"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "resend": "^6.12.4"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }

@@ -74,6 +74,7 @@ tr:hover td { background: var(--bg-gray); }
 .badge-income { background: #d1e7dd; color: #0a3622; }
 .badge-expense { background: var(--light-red); color: var(--red); }
 .badge-no-inv { background: #fff3cd; color: #856404; }
+.badge-dn { background: #fce4ec; color: #c62828; }
 .badge-recurring { background: #cfe2ff; color: #084298; }
 
 /* ── Modal / Overlay ── */
@@ -82,7 +83,7 @@ tr:hover td { background: var(--bg-gray); }
 .modal { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 12px; width: 520px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
 .modal-header { padding: 18px 24px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; margin: 0; }
-.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; touch-action: auto; }
 .modal-footer { padding: 14px 24px; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
 .icon-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; line-height: 1; padding: 2px 6px; border-radius: 4px; }
 .icon-close:hover { background: #f0f0f0; }
@@ -293,11 +294,6 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-}
-.print-document .doc-qr-code img {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
 }
 .print-document .doc-qr-code img {
     width: 100% !important;
@@ -590,16 +586,15 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 /* ── @MEDIA PRINT: PREVIEW MODE (Print Preview → Ctrl+P) ── */
 /* ── ████████████████████████████████████████████████████████████████ ── */
 
-/* ── Print Media Fixes ── */
 @media print {
     @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 0;
         orphans: 3;
         widows: 3;
     }
 
-    /* ── Ensure clean white background, zero margin/padding, block layout on body & overlay ── */
+    /* ── Strip all background, margins, and flex from body/overlay ── */
     body, #printPreviewOverlay {
         background: none !important;
         margin: 0 !important;
@@ -607,7 +602,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         display: block !important;
     }
 
-    /* ── Hide EVERYTHING outside the print preview overlay ── */
+    /* ── Hide everything outside the print overlay ── */
     body.print-preview-active > *:not(#printPreviewOverlay) {
         display: none !important;
     }
@@ -630,7 +625,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         overflow: visible !important;
     }
 
-    /* ── Hide header bar (Print button, close button, paper size selector) ── */
+    /* ── Hide toolbar (Print button, paper-size selector, close) ── */
     body.print-preview-active .print-preview-header,
     body.print-preview-active .print-preview-actions,
     body.print-preview-active .paper-size-wrap,
@@ -638,6 +633,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         display: none !important;
     }
 
+    /* ── Print body becomes a simple block (not flex) ── */
     body.print-preview-active .print-preview-body {
         overflow: visible !important;
         background: white !important;
@@ -648,45 +644,46 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         height: auto !important;
     }
 
-    /* ── Document fills the full printable page width.
-         Paper size-specific dimensions handled via .paper-a4 / .paper-letter / .paper-legal classes.
-         The browser's native print engine splits content across pages naturally. ── */
+    /* ── Document fills the @page content area exactly ── */
     body.print-preview-active .print-document {
+        display: block !important;
         width: 100% !important;
+        max-width: 100% !important;
         min-height: auto !important;
         height: auto !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 14mm 16mm 20mm !important;
         border: none !important;
         box-shadow: none !important;
         overflow: visible !important;
         position: static !important;
         left: auto !important;
         top: auto !important;
-        max-width: 100% !important;
         box-sizing: border-box !important;
         font-size: 9.5pt !important;
         line-height: 1.6 !important;
     }
 
-    /* ── Page break controls — use break-inside: avoid-page on smaller sub-elements
-         instead of large container blocks to prevent half-page orphans ── */
+    /* ── Page break: avoid orphans on compact blocks ── */
     body.print-preview-active .doc-header .doc-brand,
     body.print-preview-active .doc-header .doc-meta,
     body.print-preview-active .doc-party,
     body.print-preview-active .doc-totals,
     body.print-preview-active .doc-notes,
+    body.print-preview-active .doc-general-note,
     body.print-preview-active .doc-general-note p,
+    body.print-preview-active .doc-signatory,
     body.print-preview-active .doc-company-info {
         page-break-inside: avoid;
         break-inside: avoid-page;
     }
 
-    /* ── Items section: ensure proper table page breaking ── */
+    /* ── Items table: allow page breaks between rows ── */
     body.print-preview-active .items-section {
         display: block;
         page-break-inside: auto;
         break-inside: auto;
+        page-break-after: auto;
     }
 
     body.print-preview-active table.doc-items {
@@ -695,6 +692,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         break-inside: auto;
     }
 
+    /* ── Never split a single table row across two pages ── */
     body.print-preview-active table.doc-items tbody tr,
     body.print-preview-active table.doc-items tr {
         page-break-inside: avoid;
@@ -702,7 +700,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         page-break-after: auto;
     }
 
-    /* ── Table header repeats on each page, rows avoid breaking ── */
+    /* ── Repeat table header on each page fragment ── */
     body.print-preview-active table.doc-items thead,
     body.print-preview-active .doc-items thead {
         display: table-header-group;
@@ -713,13 +711,12 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     }
 
     body.print-preview-active tr {
+        page-break-inside: avoid;
         break-inside: avoid;
     }
 
-    /* ── Page Number Footer ──
-         Uses position: fixed to stay at bottom of each printed page.
-         Each .print-page-footer is given a data-page attribute so the
-         browser renders one footer per page.  ── */
+    /* ── Page footer (fixed to bottom of each printed page) ── */
+    /* ── Page footer (fixed to bottom of each printed page) ── */
     body.print-preview-active .print-page-footer {
         display: block !important;
         position: fixed;
@@ -736,32 +733,33 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
         width: 100%;
         box-sizing: border-box;
     }
+
     body.print-preview-active .print-footer-content {
         display: flex;
         justify-content: space-between;
         padding: 0 4px;
-        max-width: 190mm;
+        max-width: 178mm;
         margin: 0 auto;
     }
-    body.print-preview-active .print-footer-ref {
-        color: #999;
-        font-size: 7pt;
-    }
+
+    body.print-preview-active .print-footer-ref,
     body.print-preview-active .print-footer-pages {
         color: #999;
         font-size: 7pt;
     }
 
-    /* ── Prevent page break orphan for totals and signature blocks ── */
-    body.print-preview-active .doc-totals,
-    body.print-preview-active .doc-signatory {
-        page-break-inside: avoid;
-        break-inside: avoid-page;
+    /* ── QR code: same size as screen preview (2cm) so positions match exactly ── */
+    .doc-qr-img {
+        width: 2cm !important;
+        height: 2cm !important;
+        display: block !important;
     }
 
-    /* ── Ensure the items table header repeats on each page ── */
-    body.print-preview-active .items-section table.doc-items thead {
-        display: table-header-group;
+    /* ── Preserve background colors in print (table headers, badges) ── */
+    .print-document,
+    .print-document * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     /* ── Unscoped fallbacks for broader browser support ── */
@@ -771,9 +769,11 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     }
     .items-section {
         page-break-inside: auto;
+        break-inside: auto;
     }
     tr {
         page-break-inside: avoid;
+        break-inside: avoid;
     }
 }
 
@@ -811,6 +811,18 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     body:not(.print-preview-active) tr,
     body:not(.print-preview-active) img { page-break-inside: avoid; }
     body:not(.print-preview-active) thead { display: table-header-group; }
+    /* ── QR code: same size as screen preview (2cm) for position consistency ── */
+    .doc-qr-img {
+        width: 2cm !important;
+        height: 2cm !important;
+        display: block !important;
+    }
+    /* ── Preserve background colors on non-preview print ── */
+    .print-document,
+    .print-document * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
 }
 
 /* ── ████████████████████████████████████████████████████████████████ ── */
@@ -912,14 +924,25 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     .main-content { padding: 32px 24px; }
 }
 
+/* ── Sidebar: ensure desktop doesn't show translate by default ── */
+.sidebar {
+    transform: none;
+}
+
 /* ── Tablet Portrait (768px - 900px) ── */
 @media (max-width: 900px) {
-    .sidebar { transform: translateX(-100%); width: 280px; transition: transform 0.3s ease, box-shadow 0.3s ease; }
-    .sidebar.open { transform: translateX(0); box-shadow: 4px 0 30px rgba(0,0,0,0.3); }
-    .sidebar-backdrop.open { display: block; }
-    .main-wrapper { margin-left: 0; }
-    .main-content { padding: 20px 14px; }
-    .mobile-header { display: flex; }
+    /* 1. Sidebar — left drawer */
+    .sidebar { transform: translateX(-100%); width: 280px; height: 100vh; top: 0; left: 0; z-index: 2000; box-shadow: 2px 0 20px rgba(0,0,0,0.2); }
+    .sidebar.open { transform: translateX(0); }
+
+    /* 2. Mobile header — fixed at top, hamburger on right */
+    .mobile-header { display: flex !important; position: fixed; top: 0; right: 0; left: 0; z-index: 1500; background: var(--dark-green); justify-content: space-between; }
+    .menu-btn { margin-left: auto; order: 2; }
+
+    /* 3. Main content — full width, padded below header */
+    .main-wrapper { margin-left: 0 !important; padding-top: 60px; }
+    .main-content { padding: 20px 15px !important; }
+
     .stats-grid { grid-template-columns: 1fr; }
     table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     h1 { font-size: 1.3em; margin-bottom: 20px; gap: 8px; }
@@ -928,8 +951,8 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     .modal { width: 95vw; max-height: 95vh; }
     .modal-body { max-height: 60vh !important; }
 
-    /* Touch-friendly inputs & buttons */
-    input, select, textarea, .btn, button, .btn-sm { font-size: 16px !important; } /* prevents iOS zoom */
+    /* Touch-friendly inputs & buttons — prevents iOS zoom on focus */
+    input, select, textarea, .btn, button, .btn-sm { font-size: 16px !important; }
     input, select, textarea { min-height: 44px; padding: 10px 12px; }
     button:not(.btn-sm):not(.icon-close):not(.nav-link) { min-height: 44px; padding: 10px 18px; }
     .btn-sm { min-height: 36px; padding: 8px 12px; }
@@ -991,6 +1014,14 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 
     /* Overlay backdrop */
     .overlay.open { padding: 8px; }
+
+    /* Tighter h1 with less icon gap */
+    .action-bar { flex-direction: column; gap: 8px; }
+    .action-bar button { width: 100%; justify-content: center; }
+
+    /* Convert dialog buttons on mobile */
+    #convertEstOverlay .modal-body button { padding: 14px !important; font-size: 15px !important; }
+    #convertEstOverlay .modal-body button span { font-size: 11px !important; }
 }
 
 /* ── Small tablets & large phones (600px - 768px) ── */
@@ -1020,7 +1051,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     .stat-val { font-size: 1.4em; }
     .stat-icon { width: 36px; height: 36px; font-size: 0.9em; }
 
-    /* Modals */
+    /* Modals — full-screen on tablet/mobile */
     .modal { width: 100vw; border-radius: 0; max-height: 100vh; }
     .modal-header { padding: 14px 16px; }
     .modal-header h3 { font-size: 14px; }
@@ -1039,12 +1070,13 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     .totals-bar .value { font-size: 16px; }
 
     #pnlContent > div { grid-template-columns: 1fr !important; }
+
 }
 
 /* ── Card-view tables for better mobile/tablet readability ── */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .main-content table.card-view thead {
-        display: none; /* hidden by default; JS toggles card-view class */
+        display: none;
     }
     .main-content table.card-view tbody tr {
         display: flex; flex-direction: column; border: 1px solid var(--border-color);
@@ -1063,4 +1095,76 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
     }
     .main-content table.card-view td:last-child { border-bottom: none; }
     .main-content table.card-view td:first-child { font-weight: 600; color: var(--dark-green); }
+}
+
+/* ── Extra small phones (480px and below) ── */
+@media (max-width: 480px) {
+    .main-content { padding: 12px 10px; }
+    .mobile-header { padding: 10px 12px; }
+    .mobile-header h2 { font-size: 0.95em; }
+    h1 { font-size: 1.05em; margin-bottom: 14px; gap: 6px; }
+    h1 i { font-size: 0.9em; }
+    .card { padding: 14px; border-radius: 10px; margin-bottom: 16px; }
+
+    /* Tighter KPIs */
+    .kpi { padding: 12px 14px; }
+    .kpi-val { font-size: 1.2em; }
+    .kpi-icon { width: 28px; height: 28px; font-size: 0.8em; }
+    .kpi-label { font-size: 0.7em; }
+
+    /* Tighter stats */
+    .stat-card { gap: 10px; padding: 12px; }
+    .stat-val { font-size: 1.3em; }
+    .stat-icon { width: 34px; height: 34px; font-size: 0.85em; }
+
+    /* Full-width modals */
+    .modal { width: 100vw; border-radius: 0; max-height: 100vh; }
+    .modal-header { padding: 12px 14px; }
+    .modal-header h3 { font-size: 13px; }
+    .modal-body { padding: 12px; max-height: calc(100vh - 110px) !important; }
+    .modal-footer { padding: 10px 14px; flex-direction: column; gap: 6px; }
+    .modal-footer .btn-close,
+    .modal-footer .btn-green { width: 100%; justify-content: center; }
+
+    /* Smaller tile grid */
+    .tile-grid { gap: 6px; }
+    .tile { padding: 10px 6px; }
+    .tile i { font-size: 16px; }
+    .tile h4 { font-size: 10px; }
+
+    /* Compact tab bar */
+    .tab-bar { gap: 2px; }
+    .tab-btn { padding: 6px 10px; font-size: 0.72em; }
+    .tab-btn i { font-size: 0.8em; margin-right: 2px; }
+
+    /* Search bars */
+    .search-bar, .action-bar { gap: 6px; }
+    .search-bar input, .search-bar select { padding: 8px 10px; font-size: 14px !important; }
+
+    /* Touch-friendly button sizing */
+    button:not(.btn-sm):not(.icon-close):not(.nav-link) { min-height: 42px; padding: 8px 14px; }
+    .btn-sm { min-height: 34px; padding: 6px 10px; font-size: 11px !important; }
+
+    /* Compact tables */
+    th, td { padding: 8px 8px; font-size: 12px; }
+
+    /* Line items */
+    .line-item { padding: 6px 8px; gap: 4px; }
+    .line-item input { font-size: 13px; padding: 6px 8px; }
+
+    /* Totals bar */
+    .totals-bar .value { font-size: 15px; }
+
+    /* Form rows */
+    .form-row, .form-row-3, .form-row-4, .client-grid, .product-meta, .settings-grid { grid-template-columns: 1fr; gap: 8px; }
+
+    /* P&L grid */
+    #pnlContent > div { grid-template-columns: 1fr !important; gap: 12px; }
+
+    /* Convert dialog buttons */
+    #convertEstOverlay .modal-body button { padding: 12px !important; font-size: 14px !important; }
+    #convertEstOverlay .modal-body button span { font-size: 10px !important; }
+
+    /* Overlay */
+    .overlay.open { padding: 0; }
 }

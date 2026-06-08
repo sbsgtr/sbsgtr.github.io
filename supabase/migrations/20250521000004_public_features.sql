@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS admin_users (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+/* Add columns if table existed with an older shape */
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "admin_users_select_authenticated" ON admin_users;

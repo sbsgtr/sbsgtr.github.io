@@ -21,6 +21,9 @@ ALTER TABLE staff_registry ADD COLUMN IF NOT EXISTS phone TEXT;
 ALTER TABLE staff_registry ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE staff_registry ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 
+/* Ensure id column auto-generates (for tables created without the default) */
+ALTER TABLE staff_registry ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
 /* Backfill full_name from legacy "name" column when present */
 DO $$
 BEGIN
@@ -40,25 +43,4 @@ CREATE POLICY "staff_registry_authenticated_all" ON staff_registry
     USING (auth.role() = 'authenticated')
     WITH CHECK (auth.role() = 'authenticated');
 
-/* Optional: migrate legacy team_members rows if that table exists */
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM information_schema.tables
-        WHERE table_schema = 'public' AND table_name = 'team_members'
-    ) THEN
-        INSERT INTO staff_registry (full_name, staff_id, department, email, phone, status)
-        SELECT
-            COALESCE(name, 'Unknown'),
-            role,
-            department,
-            email,
-            phone,
-            'active'
-        FROM team_members tm
-        WHERE NOT EXISTS (
-            SELECT 1 FROM staff_registry sr
-            WHERE sr.full_name = tm.name AND COALESCE(sr.staff_id, '') = COALESCE(tm.role, '')
-        );
-    END IF;
-END $$;
+

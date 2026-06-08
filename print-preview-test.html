@@ -35,7 +35,7 @@
             <button class="btn-inv" onclick="renderPreview('invoice')">🧾 Invoice</button>
             <button class="btn-pf" onclick="renderPreview('proforma')">📋 Proforma</button>
             <button class="btn-dn" onclick="renderPreview('dn')">📝 Delivery Note</button>
-            <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+            <button class="btn-print" onclick="doTestPrint()">🖨️ Print</button>
         </div>
     </div>
     <div class="print-preview-body" id="previewBody"></div>
@@ -104,6 +104,16 @@
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        function doTestPrint() {
+            document.body.classList.add('print-preview-active');
+            window.print();
+        }
+
+        // Clean up the class after printing finishes
+        window.addEventListener('afterprint', function() {
+            document.body.classList.remove('print-preview-active');
+        });
 
         // Render invoice by default
         renderPreview('invoice');

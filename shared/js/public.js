@@ -460,6 +460,9 @@ RULES:
         }
     };
 
+    // Expose typeMessage globally so other parts of the page can use it
+    window.typeMessage = typeMessage;
+
     // Allow Enter key to send
     document.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'chatInput') {

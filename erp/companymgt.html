@@ -35,15 +35,14 @@
             <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
             <a href="companymgt.html" class="nav-link active"><i class="fas fa-building"></i> Company</a>
             <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" id="pwaInstallBtn" class="nav-link" style="display:none;"><i class="fas fa-download"></i> Install App</a>
             <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
         </div>
         <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
     </aside>
-
     <div class="mobile-header">
-        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
         <h2>Company</h2>
-        <div></div>
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
     </div>
 
     <div class="main-wrapper">
@@ -93,7 +92,7 @@
     </div>
 
     <!-- Team Member Modal -->
-    <div class="overlay" id="teamOverlay"><div class="modal" style="width:520px;"><div class="modal-header"><h3><i class="fas fa-user-plus" style="color:var(--primary-green);"></i> <span id="teamFormTitle">Add Team Member</span></h3><button class="icon-close" onclick="closeModal('teamOverlay')">&times;</button></div><div class="modal-body">
+    <div class="overlay" id="teamOverlay"><div class="modal"><div class="modal-header"><h3><i class="fas fa-user-plus" style="color:var(--primary-green);"></i> <span id="teamFormTitle">Add Team Member</span></h3><button class="icon-close" onclick="closeModal('teamOverlay')">&times;</button></div><div class="modal-body">
         <input type="hidden" id="editTeamId">
         <input type="hidden" id="tOriginalStatus" value="active">
         <label>Full Name *</label>
@@ -122,7 +121,7 @@
     </div></div></div>
 
     <!-- Project Modal -->
-    <div class="overlay" id="projectOverlay"><div class="modal" style="width:580px;"><div class="modal-header"><h3><i class="fas fa-tasks" style="color:var(--primary-green);"></i> <span id="projectFormTitle">New Project</span></h3><button class="icon-close" onclick="closeModal('projectOverlay')">&times;</button></div><div class="modal-body">
+    <div class="overlay" id="projectOverlay"><div class="modal"><div class="modal-header"><h3><i class="fas fa-tasks" style="color:var(--primary-green);"></i> <span id="projectFormTitle">New Project</span></h3><button class="icon-close" onclick="closeModal('projectOverlay')">&times;</button></div><div class="modal-body">
         <input type="hidden" id="editProjectId">
         <label>Project Name *</label>
         <input type="text" id="pjName" placeholder="e.g. ACME Factory Automation">

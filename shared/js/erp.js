@@ -6,11 +6,31 @@
 const ERP_SUPABASE_URL = 'https://kklpalpobkkkxzzgkfro.supabase.co';
 const ERP_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHBhbHBvYmtra3h6emdrZnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjg4MjcsImV4cCI6MjA5NDk0NDgyN30.OZtAI0tJLR6iUaARpmqrG07tcL21u1xDiYn3UK4OU3s';
 
+/* ── Safe storage for Supabase (handles browser tracking prevention) ── */
+const safeStorage = {
+    getItem: function(key) {
+        try { return localStorage.getItem(key); } catch(e) { return null; }
+    },
+    setItem: function(key, value) {
+        try { localStorage.setItem(key, value); } catch(e) { /* tracking prevention */ }
+    },
+    removeItem: function(key) {
+        try { localStorage.removeItem(key); } catch(e) { /* tracking prevention */ }
+    }
+};
+
 let supabaseClient = null;
 
 function getSupabaseClient() {
     if (!supabaseClient && typeof supabase !== 'undefined') {
-        supabaseClient = supabase.createClient(ERP_SUPABASE_URL, ERP_SUPABASE_ANON_KEY);
+        supabaseClient = supabase.createClient(ERP_SUPABASE_URL, ERP_SUPABASE_ANON_KEY, {
+            auth: {
+                storage: safeStorage,
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
     }
     return supabaseClient;
 }
@@ -18,7 +38,10 @@ function getSupabaseClient() {
 /* ── Auth Check (verifies admin status) ── */
 async function checkAuth() {
     const client = getSupabaseClient();
-    if (!client) return;
+    if (!client) {
+        console.warn('[ERP] Supabase client not available — scripts may be blocked by tracking prevention.');
+        return;
+    }
     const { data: { user } } = await client.auth.getUser();
     if (!user) {
         window.location.href = '../pages/login.html';
@@ -58,6 +81,16 @@ function closeSidebar() {
     if (backdrop) backdrop.classList.remove('open');
 }
 
+// Auto-close sidebar on nav link click on mobile
+(function setupSidebarNavClicks() {
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.nav-link');
+        if (link && window.innerWidth <= 900) {
+            closeSidebar();
+        }
+    });
+})();
+
 /* ── Sign Out ── */
 async function signOut() {
     const client = getSupabaseClient();
@@ -79,18 +112,121 @@ checkAuth();
         link.href = '../manifest.json';
         document.head.appendChild(link);
     }
-    // Theme color
+    // Theme color meta tag
     if (!document.querySelector('meta[name="theme-color"]')) {
         const meta = document.createElement('meta');
         meta.name = 'theme-color';
         meta.content = '#0b2b0f';
         document.head.appendChild(meta);
     }
-    // Service worker
+    // Apple status bar styling for iOS PWA
+    if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
+        const meta = document.createElement('meta');
+        meta.name = 'apple-mobile-web-app-status-bar-style';
+        meta.content = 'black-translucent';
+        document.head.appendChild(meta);
+    }
+    // Apple title for iOS
+    if (!document.querySelector('meta[name="apple-mobile-web-app-title"]')) {
+        const meta = document.createElement('meta');
+        meta.name = 'apple-mobile-web-app-title';
+        meta.content = 'NEXWAVE';
+        document.head.appendChild(meta);
+    }
+
+    // Apple touch icon for iOS home screen
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+        const link = document.createElement('link');
+        link.rel = 'apple-touch-icon';
+        link.href = '../icons/icon-192-maskable.png';
+        document.head.appendChild(link);
+    }
+
+    // ── Install Prompt Handling ──
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        // Show an install button if one exists in the DOM
+        const installBtn = document.getElementById('pwaInstallBtn');
+        if (installBtn) {
+            installBtn.style.display = 'inline-flex';
+            installBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (deferredInstallPrompt) {
+                    deferredInstallPrompt.prompt();
+                    deferredInstallPrompt.userChoice.then((choice) => {
+                        if (choice.outcome === 'accepted') {
+                            console.log('[PWA] User accepted install');
+                        }
+                        deferredInstallPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                }
+            });
+        }
+    });
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        const installBtn = document.getElementById('pwaInstallBtn');
+        if (installBtn) installBtn.style.display = 'none';
+        console.log('[PWA] App installed successfully');
+    });
+
+    // ── Service Worker Registration ──
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('../sw.js').catch(() => {});
+            navigator.serviceWorker.register('../sw.js').then((registration) => {
+                // Check for SW updates every 30 minutes
+                setInterval(() => {
+                    registration.update();
+                }, 30 * 60 * 1000);
+
+                // Detect new SW waiting to activate
+                if (registration.waiting) {
+                    notifySWUpdate(registration);
+                }
+
+                // Listen for new SW installing
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                notifySWUpdate(registration);
+                            }
+                        });
+                    }
+                });
+            }).catch(() => {});
+
+            // Listen for messages from the SW
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                    console.log('[PWA] Service worker updated:', event.data.cache);
+                }
+            });
         });
+    }
+
+    // Show a toast notification when a SW update is available
+    function notifySWUpdate(registration) {
+        if (window._swUpdateNotified) return;
+        window._swUpdateNotified = true;
+
+        setTimeout(() => {
+            showToast('A new version is available. Tap to update.', 'success');
+            const toasts = document.querySelectorAll('div[style*="position: fixed"][style*="bottom: 30px"]');
+            const lastToast = toasts[toasts.length - 1];
+            if (lastToast) {
+                lastToast.style.cursor = 'pointer';
+                lastToast.title = 'Click to update and reload';
+                lastToast.addEventListener('click', () => {
+                    registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                });
+            }
+        }, 2000);
     }
 })();
 
@@ -168,7 +304,7 @@ function closeModal(id) {
         });
     }
 
-    const mq = window.matchMedia('(max-width: 600px)');
+    const mq = window.matchMedia('(max-width: 768px)');
     function toggleCardView(e) {
         document.querySelectorAll('.main-content table').forEach(table => {
             table.classList.toggle('card-view', e.matches);
@@ -325,7 +461,7 @@ function openPrintPreview(title, contentHtml) {
                             <option value="Legal">Legal</option>
                         </select>
                     </span>
-                    <button class="btn-ghost" onclick="downloadPDF()" title="Save as PDF — opens print dialog, choose 'Save as PDF' destination"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                    <button class="btn-ghost" onclick="downloadPDF()" title="Save as PDF — opens print dialog, choose 'Save as PDF' destination"><i class="fas fa-file-pdf"></i> Print / Save as PDF</button>
                     <button class="btn-green" onclick="window.print()" title="Print (Ctrl+P)"><i class="fas fa-print"></i> Print</button>
                     <button class="btn-close" onclick="closePrintPreview()" title="Close preview">&times;</button>
                 </div>
@@ -455,9 +591,9 @@ function setPaperSize(size) {
         document.head.appendChild(styleEl);
     }
     if (size === 'A4') {
-        styleEl.textContent = '@media print { @page { size: A4 portrait; margin: 10mm; } }';
+        styleEl.textContent = '@media print { @page { size: A4 portrait; margin: 0; } }';
     } else {
-        styleEl.textContent = '@media print { @page { size: ' + size + ' portrait; margin: 10mm; } }';
+        styleEl.textContent = '@media print { @page { size: ' + size + ' portrait; margin: 0; } }';
     }
 }
 window.setPaperSize = setPaperSize;

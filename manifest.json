@@ -1,27 +1,100 @@
 {
-  "name": "NEXWAVE CORE",
+  "name": "NEXWAVE CORE — Industrial ERP Suite",
   "short_name": "NEXWAVE",
-  "description": "Industrial ERP & Business Suite by NEXWAVE Solutions",
+  "description": "Industrial ERP & Business Suite by NEXWAVE Solutions — Manage products, customers, estimates, invoices, accounting, and company operations.",
+  "id": "/",
   "start_url": "/pages/index.html",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "background_color": "#0b2b0f",
   "theme_color": "#0b2b0f",
+  "categories": ["business", "productivity", "finance"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/icons/icon-96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "/logo.png",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity"],
-  "lang": "en",
-  "dir": "ltr"
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "ERP Corporate Dashboard",
+      "url": "/erp/corporate.html",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "New Estimate",
+      "short_name": "Estimate",
+      "description": "Create a new estimate",
+      "url": "/erp/est_inv.html",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "short_name": "Invoices",
+      "description": "View and manage invoices",
+      "url": "/erp/est_inv.html?tab=invoices",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Accounting",
+      "short_name": "Accounting",
+      "description": "Profit & Loss, transactions",
+      "url": "/erp/accounting.html",
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "prefer_related_applications": false
 }

@@ -20,6 +20,9 @@ CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated ON chat_sessions(updated_at
 ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Allow anon access (the Edge Function uses service_role, but this is for safety)
+DROP POLICY IF EXISTS "Allow anon insert" ON chat_sessions;
 CREATE POLICY "Allow anon insert" ON chat_sessions FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow anon select" ON chat_sessions;
 CREATE POLICY "Allow anon select" ON chat_sessions FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "Allow anon update" ON chat_sessions;
 CREATE POLICY "Allow anon update" ON chat_sessions FOR UPDATE TO anon USING (true);

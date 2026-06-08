@@ -35,15 +35,14 @@
             <a href="accounting.html" class="nav-link active"><i class="fas fa-calculator"></i> Accounting</a>
             <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
             <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" id="pwaInstallBtn" class="nav-link" style="display:none;"><i class="fas fa-download"></i> Install App</a>
             <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
         </div>
         <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
     </aside>
-
     <div class="mobile-header">
-        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
         <h2>Accounting</h2>
-        <div></div>
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
     </div>
 
     <div class="main-wrapper">
@@ -84,7 +83,7 @@
     </div>
 
     <!-- Transaction Modal (REAL FORM) -->
-    <div class="overlay" id="transactionOverlay"><div class="modal" style="width:520px;"><div class="modal-header"><h3><i class="fas fa-exchange-alt" style="color:var(--primary-green);"></i> <span id="txFormTitle">Add Transaction</span></h3><button class="icon-close" onclick="closeModal('transactionOverlay')">&times;</button></div><div class="modal-body">
+    <div class="overlay" id="transactionOverlay"><div class="modal"><div class="modal-header"><h3><i class="fas fa-exchange-alt" style="color:var(--primary-green);"></i> <span id="txFormTitle">Add Transaction</span></h3><button class="icon-close" onclick="closeModal('transactionOverlay')">&times;</button></div><div class="modal-body">
         <input type="hidden" id="editTxId">
         <input type="hidden" id="editTxSource">
         <label>Type</label>
@@ -272,7 +271,7 @@
                         const isUnsafe = t.category === 'debit_note';
                         return `<tr${isUnsafe ? ' style="border-left:3px solid #e65100;"' : ''}>
                             <td>${t.date ? new Date(t.date).toLocaleDateString() : '—'}</td>
-                            <td>${escapeHtml(t.description || '—')}${isUnsafe ? ' <span style="background:#fff3e0;color:#e65100;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;">⚠ UNSAFE</span>' : ''}${t.notes ? '<br><span style="font-size:11px;color:#888;">Ref: '+escapeHtml(t.notes)+'</span>' : (t.reference_no ? '<br><span style="font-size:11px;color:#888;">Ref: '+escapeHtml(t.reference_no)+'</span>' : '')}</td>
+                            <td>${escapeHtml(t.description || '—')}${isUnsafe ? ' <span class="badge badge-dn">Debit Note</span>' : ''}${t.notes ? '<br><span style="font-size:11px;color:#888;">Ref: '+escapeHtml(t.notes)+'</span>' : (t.reference_no ? '<br><span style="font-size:11px;color:#888;">Ref: '+escapeHtml(t.reference_no)+'</span>' : '')}</td>
                             <td><span class="cat-tag">${escapeHtml(t.category || 'General')}</span></td>
                             <td><span class="badge badge-${t.type}">${t.type}</span></td>
                             <td style="font-weight:600;color:${t.type === 'income' ? 'var(--primary-green)' : 'var(--red)'};">${t.type === 'income' ? '+' : '-'} LKR ${parseFloat(t.amount || 0).toLocaleString()}</td>

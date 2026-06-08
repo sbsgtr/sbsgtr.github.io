@@ -49,15 +49,14 @@
             <a href="accounting.html" class="nav-link"><i class="fas fa-calculator"></i> Accounting</a>
             <a href="companymgt.html" class="nav-link"><i class="fas fa-building"></i> Company</a>
             <a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" id="pwaInstallBtn" class="nav-link" style="display:none;"><i class="fas fa-download"></i> Install App</a>
             <a href="#" onclick="signOut(); return false;" class="nav-link" style="color:#ff8a80;margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;"><i class="fas fa-power-off"></i> Logout</a>
         </div>
         <div class="copyright-area"><span class="armor-icon"></span> NEXWAVE CORE v2.0</div>
     </aside>
-
     <div class="mobile-header">
-        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
         <h2>Dashboard</h2>
-        <div></div>
+        <div class="menu-btn" id="menuToggle" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
     </div>
 
     <div class="main-wrapper">
@@ -123,7 +122,7 @@
                     document.getElementById('kpiCustomers').innerText = (customers || []).length || 0;
 
                     const openInv = (invoices || []).filter(i => i.status === 'pending' || i.status === 'sent').length;
-                    const pendingEst = (estimates || []).filter(e => e.status === 'draft' || e.status === 'sent').length;
+                    const pendingEst = (estimates || []).filter(e => e.status === 'Estimate').length;
                     const paidThisMonth = (invoices || []).filter(i => i.status === 'paid').reduce((sum, i) => sum + parseFloat(i.total_amount || 0), 0);
                     const overdue = (invoices || []).filter(i => i.status === 'overdue').length;
 
