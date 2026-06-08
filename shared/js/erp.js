@@ -807,6 +807,138 @@ function buildPrintDoc(config) {
     `;
 }
 
+/* ── Send document email to customer via Resend edge function ── */
+async function sendDocumentEmail(config) {
+    const customer = config.customer;
+    if (!customer || !customer.email) {
+        showToast('Customer has no email address on file.', 'error');
+        return false;
+    }
+
+    const typeLabel = config.type === 'estimate' ? 'Estimate'
+        : config.type === 'proforma' ? 'Proforma Invoice'
+        : config.type === 'dn' ? 'Debit Note'
+        : 'Invoice';
+
+    const company = config.company || {};
+    const companyName = company.company_name || 'NEXWAVE Solutions (Pvt) Ltd';
+    const companyEmail = company.email || 'info@nexwave.lk';
+    const companyPhone = company.phone || '+94 11 234 5678';
+    const grandTotal = config.totals?.total || 0;
+    const customerName = customer.company_name || customer.contact_person || customer.name || 'Valued Client';
+
+    // Build line items HTML for the email
+    const lineItems = config.items || [];
+    let itemsHtml = '';
+    lineItems.forEach(function(item) {
+        const desc = escapeHtml(item.description || item.product_name || item.name || 'Item');
+        const qty = item.quantity || item.qty || 1;
+        const price = parseFloat(item.unit_price || item.price || 0);
+        const total = parseFloat(item.total || (qty * price) || 0);
+        itemsHtml += '<tr style="border-bottom:1px solid #eee;">' +
+            '<td style="padding:10px 12px;font-size:13px;color:#333;">' + desc + '</td>' +
+            '<td style="padding:10px 12px;font-size:13px;text-align:center;color:#555;">' + qty + '</td>' +
+            '<td style="padding:10px 12px;font-size:13px;text-align:right;color:#555;">LKR ' + price.toLocaleString() + '</td>' +
+            '<td style="padding:10px 12px;font-size:13px;text-align:right;font-weight:600;color:#1b5e20;">LKR ' + total.toLocaleString() + '</td>' +
+        '</tr>';
+    });
+
+    const verifyUrl = window.location.origin + '/pages/verify.html?id=' + encodeURIComponent(config.id || config.number || '');
+    const dateStr = config.date ? new Date(config.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const emailHtml = '<!DOCTYPE html>' +
+    '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+    '<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;">' +
+    '<div style="max-width:600px;margin:0 auto;background:#fff;">' +
+        // Header
+        '<div style="background:linear-gradient(135deg,#0b2b0f,#1b5e20);padding:30px 40px;text-align:center;">' +
+            '<h1 style="margin:0;font-size:28px;font-weight:800;letter-spacing:2px;color:#fff;">NEX<span style="color:#66bb6a;">WAVE</span></h1>' +
+            '<p style="margin:4px 0 0;font-size:11px;color:#a5d6a7;letter-spacing:3px;text-transform:uppercase;">SOLUTIONS</p>' +
+        '</div>' +
+        // Document type badge
+        '<div style="text-align:center;padding:24px 40px 8px;">' +
+            '<span style="display:inline-block;background:#e8f5e9;color:#1b5e20;font-size:12px;font-weight:700;padding:6px 18px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;">' + escapeHtml(typeLabel) + '</span>' +
+            '<h2 style="margin:12px 0 4px;font-size:22px;color:#222;">' + escapeHtml(config.number || '') + '</h2>' +
+            '<p style="margin:0;font-size:13px;color:#888;">Date: ' + dateStr + '</p>' +
+        '</div>' +
+        // Greeting
+        '<div style="padding:8px 40px 16px;">' +
+            '<p style="font-size:15px;color:#333;line-height:1.6;">Dear <strong>' + escapeHtml(customerName) + '</strong>,</p>' +
+            '<p style="font-size:14px;color:#555;line-height:1.6;">Please find your ' + typeLabel.toLowerCase() + ' attached below. Thank you for choosing NEXWAVE Solutions.</p>' +
+        '</div>' +
+        // Items table
+        '<div style="padding:0 40px;">' +
+            '<table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;">' +
+                '<thead><tr style="background:#1b5e20;color:#fff;">' +
+                    '<th style="padding:12px;font-size:12px;font-weight:600;text-align:left;">Description</th>' +
+                    '<th style="padding:12px;font-size:12px;font-weight:600;text-align:center;">Qty</th>' +
+                    '<th style="padding:12px;font-size:12px;font-weight:600;text-align:right;">Rate</th>' +
+                    '<th style="padding:12px;font-size:12px;font-weight:600;text-align:right;">Amount</th>' +
+                '</tr></thead>' +
+                '<tbody>' + (itemsHtml || '<tr><td colspan="4" style="padding:20px;text-align:center;color:#999;">No items</td></tr>') + '</tbody>' +
+            '</table>' +
+        '</div>' +
+        // Total
+        '<div style="padding:20px 40px;text-align:right;">' +
+            '<div style="border-top:2px solid #1b5e20;padding-top:12px;">' +
+                '<span style="font-size:16px;color:#555;font-weight:600;">Total Amount: </span>' +
+                '<span style="font-size:24px;font-weight:800;color:#1b5e20;">LKR ' + grandTotal.toLocaleString() + '</span>' +
+            '</div>' +
+        '</div>' +
+        // Bank details
+        '<div style="padding:0 40px 16px;">' +
+            '<div style="background:#f9fbe7;border:1px solid #e8f5e9;border-radius:8px;padding:16px;">' +
+                '<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#1b5e20;text-transform:uppercase;letter-spacing:1px;">Bank Details</p>' +
+                '<p style="margin:0;font-size:13px;color:#555;line-height:1.6;">' +
+                    escapeHtml(company.bank_details || 'Commercial Bank PLC · Branch: Siddamulla · Account: 1000234567').replace(/\n/g, '<br>') +
+                '</p>' +
+            '</div>' +
+        '</div>' +
+        // Verify button
+        (config.id ? '<div style="padding:8px 40px 24px;text-align:center;">' +
+            '<a href="' + verifyUrl + '" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;">🔍 Verify Online</a>' +
+            '<p style="margin:8px 0 0;font-size:11px;color:#999;">Scan the QR code on your document or click above to verify</p>' +
+        '</div>' : '') +
+        // Footer
+        '<div style="background:#f5f5f5;padding:20px 40px;text-align:center;border-top:1px solid #e0e0e0;">' +
+            '<p style="margin:0 0 4px;font-size:12px;color:#888;"><strong>' + escapeHtml(companyName) + '</strong></p>' +
+            '<p style="margin:0 0 4px;font-size:12px;color:#888;">' + escapeHtml(companyEmail) + ' | ' + escapeHtml(companyPhone) + '</p>' +
+            '<p style="margin:0;font-size:11px;color:#aaa;">Engineering precision turnkey solutions · Colombo, Sri Lanka</p>' +
+        '</div>' +
+    '</div></body></html>';
+
+    const subject = typeLabel + ' ' + (config.number || '') + ' from NEXWAVE Solutions';
+
+    try {
+        const response = await fetch(ERP_SUPABASE_URL + '/functions/v1/resend-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': ERP_SUPABASE_ANON_KEY,
+                'Authorization': 'Bearer ' + ERP_SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({
+                to: customer.email,
+                subject: subject,
+                html: emailHtml
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to send email');
+        }
+
+        showToast(typeLabel + ' sent to ' + customer.email + '!', 'success');
+        return true;
+    } catch (err) {
+        console.warn('Email send failed:', err);
+        showToast('Failed to send email: ' + (err.message || err), 'error');
+        return false;
+    }
+}
+window.sendDocumentEmail = sendDocumentEmail;
+
 /* ── Tabs ── */
 function switchTab(tabGroup, tabName) {
     document.querySelectorAll(`.tab-section[data-group="${tabGroup}"]`).forEach(el => {

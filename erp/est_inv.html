@@ -267,6 +267,7 @@
                                     <button class="btn-sm blue" onclick="editEstimate('${e.id}')" ${locked ? 'style="opacity:0.5" title="Document is locked and cannot be edited"' : ''}><i class="fas fa-edit"></i></button>
                                     ${convertTitle ? `<button class="btn-sm" style="background:#1565c0;color:#fff;" onclick="showConvertEstDialog('${e.id}')" title="${convertTitle}"><i class="fas fa-exchange-alt"></i></button>` : ''}
                                     <button class="btn-sm" style="background:var(--primary-green);color:#fff;" onclick="previewEstimatePrint('${e.id}')" title="Print Preview"><i class="fas fa-print"></i></button>
+                                    <button class="btn-sm" style="background:#1565c0;color:#fff;" onclick="emailEstimateToCustomer('${e.id}')" title="Email to Customer"><i class="fas fa-envelope"></i></button>
                                     <button class="btn-sm red" onclick="deleteEstimate('${e.id}')" ${!isEst ? 'style="opacity:0.5" title="Only estimates can be deleted"' : ''}><i class="fas fa-trash"></i></button>
                                 </div>
                             </td>
@@ -614,6 +615,28 @@
                 }
             };
 
+            window.emailEstimateToCustomer = async function(id) {
+                try {
+                    await loadCustomerDropdowns();
+                    const config = await buildDocConfigFromEst(id);
+                    if (!config) { showToast('Estimate not found.', 'error'); return; }
+                    await sendDocumentEmail(config);
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
+            window.emailInvoiceToCustomer = async function(id) {
+                try {
+                    await loadCustomerDropdowns();
+                    const config = await buildDocConfigFromInv(id);
+                    if (!config) { showToast('Invoice not found.', 'error'); return; }
+                    await sendDocumentEmail(config);
+                } catch (err) {
+                    showToast('Error: ' + (err.message || err), 'error');
+                }
+            };
+
             /* ── DEBIT NOTES ── */
             async function loadDNs() {
                 try {
@@ -679,6 +702,7 @@
                                 <div class="doc-actions">
                                     ${admin ? `<button class="btn-sm blue" onclick="editInvoice('${inv.id}')" title="Admin: Edit"><i class="fas fa-edit"></i></button>` : ''}
                                     <button class="btn-sm" style="background:var(--primary-green);color:#fff;" onclick="previewInvoicePrint('${inv.id}')" title="Print Preview"><i class="fas fa-print"></i></button>
+                                    <button class="btn-sm" style="background:#1565c0;color:#fff;" onclick="emailInvoiceToCustomer('${inv.id}')" title="Email to Customer"><i class="fas fa-envelope"></i></button>
                                     <button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="markInvoicePaid('${inv.id}')" title="Mark Paid"><i class="fas fa-check"></i></button>
                                     ${admin ? `<button class="btn-sm red" onclick="deleteInvoice('${inv.id}')" title="Admin: Delete"><i class="fas fa-trash"></i></button>` : ''}
                                 </div>
