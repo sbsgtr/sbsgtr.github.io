@@ -939,6 +939,38 @@ async function sendDocumentEmail(config) {
 }
 window.sendDocumentEmail = sendDocumentEmail;
 
+/* ── Send admin alert via Resend edge function ── */
+async function sendAdminNotification(subject, htmlBody) {
+    const adminEmail = 'admin@nexwavex.com';
+    try {
+        const response = await fetch(ERP_SUPABASE_URL + '/functions/v1/resend-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': ERP_SUPABASE_ANON_KEY,
+                'Authorization': 'Bearer ' + ERP_SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({
+                to: adminEmail,
+                subject: subject,
+                html: htmlBody
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to send admin notification');
+        }
+
+        return true;
+    } catch (err) {
+        console.warn('Admin notification failed:', err);
+        showToast('Failed to notify admin: ' + (err.message || err), 'error');
+        return false;
+    }
+}
+window.sendAdminNotification = sendAdminNotification;
+
 /* ── Tabs ── */
 function switchTab(tabGroup, tabName) {
     document.querySelectorAll(`.tab-section[data-group="${tabGroup}"]`).forEach(el => {

@@ -704,7 +704,7 @@
                                     <button class="btn-sm" style="background:var(--primary-green);color:#fff;" onclick="previewInvoicePrint('${inv.id}')" title="Print Preview"><i class="fas fa-print"></i></button>
                                     <button class="btn-sm" style="background:#1565c0;color:#fff;" onclick="emailInvoiceToCustomer('${inv.id}')" title="Email to Customer"><i class="fas fa-envelope"></i></button>
                                     <button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="markInvoicePaid('${inv.id}')" title="Mark Paid"><i class="fas fa-check"></i></button>
-                                    ${admin ? `<button class="btn-sm red" onclick="deleteInvoice('${inv.id}')" title="Admin: Delete"><i class="fas fa-trash"></i></button>` : ''}
+                                    ${admin ? `<button class="btn-sm red" onclick="deleteInvoice('${inv.id}')" title="Admin: Delete"><i class="fas fa-trash"></i></button>` : `<button class="btn-sm" style="background:#e65100;color:#fff;" onclick="deleteInvoice('${inv.id}')" title="Request admin to delete"><i class="fas fa-flag"></i></button>`}
                                 </div>
                             </td>
                         </tr>`;
@@ -804,7 +804,51 @@
             };
 
             window.deleteInvoice = async function(id) {
-                if (!isAdmin()) { showToast('Only admins can delete invoices.', 'error'); return; }
+                if (!isAdmin()) {
+                    // Non-admin: request approval
+                    try {
+                        const { data: inv, error } = await client.from('invoices').select('*, customers:customer_id(contact_person, company_name)').eq('id', id).single();
+                        if (error || !inv) { showToast('Invoice not found.', 'error'); return; }
+                        
+                        const customerName = inv.customers?.contact_person || inv.customers?.company_name || 'Unknown';
+                        const invNum = inv.invoice_number || id;
+                        const amount = parseFloat(inv.total_amount || 0).toLocaleString();
+                        
+                        const subject = '[DELETE REQUEST] Invoice ' + invNum + ' — ' + customerName;
+                        const htmlBody = '<!DOCTYPE html>' +
+                        '<html><head><meta charset="utf-8"></head>' +
+                        '<body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding:30px;background:#f5f5f5;">' +
+                            '<div style="max-width:500px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">' +
+                                '<div style="background:linear-gradient(135deg,#b71c1c,#d32f2f);padding:24px;text-align:center;">' +
+                                    '<h1 style="margin:0;font-size:20px;font-weight:700;color:#fff;">⚠️ Invoice Deletion Request</h1>' +
+                                '</div>' +
+                                '<div style="padding:24px;">' +
+                                    '<p style="font-size:14px;color:#555;line-height:1.6;">' +
+                                        '<strong>' + escapeHtml(currentUserEmail) + '</strong> has requested to delete an invoice:</p>' +
+                                    '<div style="background:#fff3e0;border:1px solid #ffe0b2;border-radius:8px;padding:16px;margin:16px 0;">' +
+                                        '<p style="margin:4px 0;font-size:14px;"><strong>Invoice:</strong> ' + escapeHtml(invNum) + '</p>' +
+                                        '<p style="margin:4px 0;font-size:14px;"><strong>Customer:</strong> ' + escapeHtml(customerName) + '</p>' +
+                                        '<p style="margin:4px 0;font-size:14px;"><strong>Amount:</strong> LKR ' + amount + '</p>' +
+                                        '<p style="margin:4px 0;font-size:14px;"><strong>Status:</strong> ' + escapeHtml(inv.status || 'N/A') + '</p>' +
+                                        '<p style="margin:4px 0;font-size:14px;"><strong>Requested by:</strong> ' + escapeHtml(currentUserEmail) + '</p>' +
+                                    '</div>' +
+                                    '<p style="font-size:13px;color:#888;line-height:1.6;">Please log in to the ERP to review and approve or reject this deletion request.</p>' +
+                                    '<a href="' + window.location.origin + '/erp/est_inv.html?tab=invoices' + '" style="display:block;text-align:center;background:#d32f2f;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;margin-top:16px;">Open ERP &amp; Review</a>' +
+                                '</div>' +
+                                '<div style="background:#f5f5f5;padding:16px;text-align:center;border-top:1px solid #e0e0e0;">' +
+                                    '<p style="margin:0;font-size:11px;color:#aaa;">NEXWAVE Solutions · ERP Deletion Request</p>' +
+                                '</div>' +
+                            '</div>' +
+                        '</body></html>';
+                        
+                        await sendAdminNotification(subject, htmlBody);
+                        showToast('Deletion request sent to admin for approval.', 'success');
+                    } catch (err) {
+                        showToast('Error sending deletion request: ' + (err.message || err), 'error');
+                    }
+                    return;
+                }
+                
                 if (!confirm('Delete this invoice? This action requires admin credentials.')) return;
                 try {
                     await client.from('invoices').delete().eq('id', id);
