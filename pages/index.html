@@ -2,14 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <link rel="manifest" href="../manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Automation & Engineering Solutions in Sri Lanka | NEXWAVE</title>
+    <meta name="description" content="NEXWAVE Solutions — industrial automation solutions in Sri Lanka: factory automation equipment, PCB & electronics, CNC machining, PLC programming and ERP software for manufacturing. Serving Colombo, Gampaha, Biyagama & Katunayake.">
+    <meta name="keywords" content="industrial automation solutions Sri Lanka, factory automation equipment supplier Sri Lanka, ERP software for manufacturing Sri Lanka, apparel automation Sri Lanka, food processing automation Sri Lanka, PCB design Sri Lanka, CNC machining Sri Lanka, PLC programming Colombo, Gampaha, Biyagama, Katunayake, NEXWAVE">
+    <meta name="author" content="NEXWAVE Solutions Pvt Ltd">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://nexwavex.com/pages/index.html">
     <meta name="theme-color" content="#0b2b0f">
-    <title>NEXWAVE Solutions Pvt Ltd</title>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="NEXWAVE Solutions">
+    <meta property="og:title" content="Industrial Automation & Engineering Solutions in Sri Lanka | NEXWAVE">
+    <meta property="og:description" content="Factory automation equipment, PCB & electronics, CNC machining and ERP software for manufacturing in Sri Lanka — serving Colombo, Gampaha, Biyagama & Katunayake.">
+    <meta property="og:url" content="https://nexwavex.com/pages/index.html">
+    <meta property="og:image" content="https://nexwavex.com/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Industrial Automation & Engineering Solutions in Sri Lanka | NEXWAVE">
+    <meta name="twitter:description" content="Factory automation equipment, PCB & electronics, CNC machining and ERP software for manufacturing in Sri Lanka.">
+    <meta name="twitter:image" content="https://nexwavex.com/logo.png">
+    <link rel="manifest" href="../manifest.json">
     <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
-    <link rel="stylesheet" href="../shared/css/public.css">
+    <link rel="stylesheet" href="../shared/css/public.css?v=20261103.1">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","@id":"https://www.nexwavex.com/#business","name":"NEXWAVE Solutions","legalName":"NEXWAVE Solutions (Pvt) Ltd","url":"https://www.nexwavex.com/","logo":"https://nexwavex.com/logo.png","image":"https://nexwavex.com/logo.png","description":"Industrial automation solutions in Sri Lanka: factory automation equipment, PCB & electronics, CNC machining, PLC programming, structural engineering and ERP software for manufacturing.","foundingDate":"2016","telephone":"+94777349279","email":"info@nexwavex.com","address":{"@type":"PostalAddress","streetAddress":"Weboda","addressLocality":"Kadawatha","addressRegion":"Gampaha, Western Province","addressCountry":"LK"},"geo":{"@type":"GeoCoordinates","latitude":7.0014,"longitude":79.9499},"areaServed":[{"@type":"Country","name":"Sri Lanka"},{"@type":"City","name":"Colombo"},{"@type":"City","name":"Gampaha"},{"@type":"City","name":"Biyagama"},{"@type":"City","name":"Katunayake"},{"@type":"City","name":"Kadawatha"}],"contactPoint":{"@type":"ContactPoint","telephone":"+94777349279","email":"info@nexwavex.com","contactType":"sales","areaServed":"LK"},"sameAs":["https://www.nexwavex.com/"],"knowsAbout":["Industrial automation solutions Sri Lanka","Factory automation equipment","ERP software for manufacturing","PCB design and assembly","CNC machining","PLC programming","Apparel automation","Food processing automation"]}</script>
     <style>
         :root {
             --green-deep:   #071a09;
@@ -134,7 +154,7 @@
 
         /* ── HERO ── */
         .hero {
-            min-height: 100vh;
+            min-height: 100vh; min-height: 100dvh;
             display: flex; flex-direction: column; justify-content: center;
             padding: 120px 5% 80px;
             position: relative;
@@ -369,6 +389,7 @@
         }
 
         /* ── PROCESS ── */
+        .process-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
         .process-steps { display: flex; flex-direction: column; gap: 0; max-width: 700px; margin: 0 auto; }
         .process-step {
             display: grid; grid-template-columns: 60px 1fr;
@@ -439,12 +460,16 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .clients-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; text-align: center; }
-        .clients-row { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+        .clients-row { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: nowrap; overflow: hidden; white-space: nowrap; max-width: 100%; }
+        @media (max-width: 700px) { .clients-row { gap: 24px; } .client-name { font-size: 18px !important; letter-spacing: 1.5px !important; } }
         .client-name {
             font-family: 'Bebas Neue', sans-serif;
             font-size: 22px; letter-spacing: 2px;
             color: rgba(255,255,255,0.18);
             transition: color 0.3s;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
         .client-name:hover { color: rgba(255,255,255,0.55); }
 
@@ -545,12 +570,16 @@
         .chat-btn { width: 60px; height: 60px; background: var(--lime); color: var(--green-deep); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: transform 0.3s; }
         .chat-btn:hover { transform: scale(1.1); }
         .chat-box { 
-            position: absolute; bottom: 80px; right: 0; width: 320px; height: 450px; 
+            position: absolute; bottom: 80px; right: 0; width: 460px; height: 640px; 
+            max-width: calc(100vw - 48px); max-height: calc(100dvh - 170px); 
+            min-width: 300px; min-height: 380px; 
+            resize: both; overflow: hidden; 
             background: rgba(11, 43, 15, 0.95); backdrop-filter: blur(15px); 
             border: 1px solid rgba(105, 240, 174, 0.2); border-radius: 20px; 
-            display: none; flex-direction: column; overflow: hidden; 
+            display: none; flex-direction: column; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
         }
+        @media (max-width: 600px) { .chat-box { width: calc(100vw - 40px); height: 70dvh; resize: none; } }
         .chat-box.open { display: flex; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } 
         @keyframes pulse-wave {
@@ -573,17 +602,21 @@
             .nav-desktop { display: none; }
             .menu-btn { display: flex; }
             .about-layout { grid-template-columns: 1fr; }
-            .about-visual { height: 280px; }
+            .about-visual { height: 400px; }
             .why-grid { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
+            .process-layout { grid-template-columns: 1fr; gap: 40px; }
         }
         @media (max-width: 600px) {
+            .hero-badge { font-size: 9px; letter-spacing: 0.05em; padding: 5px 10px; gap: 6px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; margin-bottom: 12px; }
+            .hero { padding: 84px 5% 48px; }
             .hero h1 { font-size: 52px; }
             .footer-grid { grid-template-columns: 1fr; gap: 32px; }
             .bottom-bar { flex-direction: column; align-items: flex-start; }
             .hero-ctas { flex-direction: column; }
             .hero-ctas a { text-align: center; justify-content: center; }
-            .about-chip { bottom: 15px; left: 15px; padding: 10px 14px; }
+            .about-visual { height: 380px; }
+            .about-chip { padding: 10px 14px; }   /* keep bottom/left at 28px so it lines up with the status list */
             .about-chip strong { font-size: 18px; line-height: 1.1; }
             .about-chip span { font-size: 10px; }
         }
@@ -616,7 +649,7 @@
 <!-- ══ HEADER ══ -->
 <header id="mainHeader">
     <a class="logo-wrap" href="index.html">
-        <img src="../logo.png" class="site-logo" alt="NEXWAVE Logo">
+        <img src="../logo.png" class="site-logo" alt="NEXWAVE Solutions logo — precision engineering Sri Lanka" width="36" height="36" fetchpriority="high" decoding="async">
         <span class="logo-text">NEX<span>WAVE</span></span>
     </a>
 
@@ -693,7 +726,7 @@
             <span class="accent">ENGINEERED</span><br>
             <span class="outline">SOLUTIONS</span>
         </h1>
-        <p class="hero-sub">We integrate high-precision manufacturing, smart automation, and structural engineering — transforming how industries operate, scale, and evolve.</p>
+        <p class="hero-sub">We integrate high-precision manufacturing, smart automation, and structural engineering — industrial automation solutions in Sri Lanka transforming how factories operate, scale, and evolve across Colombo, Gampaha, Biyagama and Katunayake.</p>
         <div class="hero-ctas">
             <a href="what-we-do.html" class="btn-primary"><i class="fas fa-arrow-right"></i> Explore Services</a>
             <a href="who-we-are.html" class="btn-outline"><i class="fas fa-users"></i> Who We Are</a>
@@ -768,7 +801,7 @@
                 </div>
                 <div class="about-chip">
                     <strong>ISO</strong>
-                    <span>Certified Operations</span>
+                    <span>Aligned Operation</span>
                 </div>
             </div>
         </div>
@@ -780,7 +813,7 @@
     <div style="text-align:center;max-width:600px;margin:0 auto 48px">
         <div class="section-tag" style="justify-content:center;text-align:center">What We Do</div>
         <h2 class="section-title reveal">OUR CORE<br><span style="color:var(--lime)">CAPABILITIES</span></h2>
-        <p class="section-body reveal" style="margin:0 auto">From electronics to heavy engineering, we deliver end-to-end industrial solutions with precision and reliability.</p>
+        <p class="section-body reveal" style="margin:0 auto">From electronics to heavy engineering — including ERP software for manufacturing in Sri Lanka — we deliver end-to-end industrial solutions with precision and reliability.</p>
     </div>
     <div class="services-grid">
         <div class="svc-card reveal">
@@ -874,7 +907,7 @@
 
 <!-- ══ PROCESS ══ -->
 <section class="section" style="background:rgba(255,255,255,0.01)">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start">
+    <div class="process-layout">
         <div class="reveal">
             <div class="section-tag">How We Work</div>
             <h2 class="section-title">OUR<br><span style="color:var(--lime)">PROCESS</span></h2>
@@ -934,7 +967,7 @@
 <!-- ══ CLIENTS ══ -->
 <div class="clients-bar reveal">
     <p class="clients-label">Trusted by leading companies across Sri Lanka</p>
-    <div class="clients-row">
+    <div class="clients-row" id="clientsRow">
         <div class="client-name">HATTON NATIONAL</div>
         <div class="client-name">LOADSTAR</div>
         <div class="client-name">PRIMA</div>
@@ -951,10 +984,10 @@
             <div class="footer-logo-text">NEX<span>WAVE</span></div>
             <p class="footer-tagline">Precision engineering meets scalable technology. Sri Lanka's industrial evolution partner since 2016.</p>
             <div class="footer-social">
-                <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61596838313556" class="social-btn" target="_blank" rel="noopener" aria-label="NEXWAVE Solutions on Facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
                 <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://wa.me/94778005900" class="social-btn" target="_blank" rel="noopener" aria-label="Chat with NEXWAVE on WhatsApp"><i class="fab fa-whatsapp"></i></a>
             </div>
         </div>
         <div>
@@ -972,10 +1005,11 @@
         <div>
             <h4>Contact</h4>
             <div class="footer-contact">
-                <div class="contact-row"><i class="fas fa-map-marker-alt"></i><span>209/32, Kudamaduwa,<br>Siddamulla, Piliyandala,<br>Sri Lanka</span></div>
+                <div class="contact-row"><i class="fas fa-map-marker-alt"></i><span>Weboda,<br>Kadawatha,<br>Sri Lanka</span></div>
                 <div class="contact-row"><i class="fas fa-phone"></i><a href="tel:+94112233444">+94 11 223 3444</a></div>
                 <div class="contact-row"><i class="fas fa-envelope"></i><a href="mailto:info@nexwavex.com">info@nexwavex.com</a></div>
                 <div class="contact-row"><i class="fas fa-globe"></i><a href="https://www.nexwavex.com" target="_blank">www.nexwavex.com</a></div>
+                <div class="contact-row"><i class="fas fa-id-card"></i><span>Reg: PV00366203</span></div>
             </div>
         </div>
         <div>
@@ -1000,8 +1034,52 @@
             Secured & Protected
         </div>
     </div>
-</footer>    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</footer>    <script src="/shared/js/db.js"></script>
     <script src="../shared/config.js"></script>
-    <script src="../shared/js/public.js"></script>
+    <script src="../shared/js/public.js?v=20261103.2"></script>
+<script>
+/* Homepage clients strip: random company names from the customer list.
+   Single line only — the count auto-shrinks until everything fits.
+   Static names above stay as the fallback when the list is empty/offline. */
+(function () {
+    var row = document.getElementById('clientsRow');
+    if (!row) return;
+    var pool = [];
+    function shuffle(a) {
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+    function fits() { return row.scrollWidth <= row.clientWidth + 1; }
+    function renderFit(names) {
+        row.innerHTML = '';
+        for (var i = 0; i < names.length; i++) {
+            var el = document.createElement('div');
+            el.className = 'client-name';
+            el.textContent = String(names[i]).toUpperCase();
+            row.appendChild(el);
+            if (!fits()) { row.removeChild(el); break; }
+        }
+    }
+    function refit() { if (pool.length) renderFit(pool); }
+    var rt;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(refit, 150); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+    window.addEventListener('load', refit);
+    fetch('../api/clients.php', { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
+        .then(function (d) {
+            var list = (d && Array.isArray(d.clients) ? d.clients : [])
+                .map(function (n) { return String(n || '').trim(); })
+                .filter(function (n) { return n !== ''; });
+            if (!list.length) { pool = []; return; } // keep fallback names
+            pool = shuffle(list.slice()).slice(0, 6);
+            renderFit(pool);
+        })
+        .catch(function () { /* keep fallback names */ });
+})();
+</script>
 
 </body>
